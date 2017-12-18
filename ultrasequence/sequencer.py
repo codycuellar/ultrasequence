@@ -89,7 +89,10 @@ class File(object):
 		parts = extract_frame(self._base)
 		head, self._framenum, tail = parts
 		self.head = os.path.join(self.path, head)
-		self.tail = '.'.join([tail, self.ext])
+		if not self.ext:
+			self.tail = ''
+		else:
+			self.tail = '.'.join([tail, self.ext])
 		self.padding = len(self._framenum)
 
 		try:
