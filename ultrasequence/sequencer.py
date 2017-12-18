@@ -316,7 +316,7 @@ class Sequence(object):
 			self.padding = file.padding
 
 
-def make_sequences(*filelist, include_exts=None, get_stats=False,
+def make_sequences(filelist, include_exts=None, get_stats=False,
 				   force_consistent_padding=False):
 	"""
 	This function takes a list of filename path strings and attempts

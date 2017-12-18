@@ -255,7 +255,7 @@ class TestMakeSequences(TestCase):
 			self.regular_sequence = [x.rstrip() for x in testA.readlines()]
 
 	def test_make_sequence_returns_three_lists(self):
-		results = sq.make_sequences(*self.regular_sequence)
+		results = sq.make_sequences(self.regular_sequence)
 		self.assertEqual(len(results), 3)
 		for l in results:
 			self.assertIsInstance(l, list)
@@ -265,7 +265,7 @@ class TestMakeSequences(TestCase):
 			'file.10001.mov',
 			'file.10002.mov'
 		]
-		excluded = sq.make_sequences(*self.regular_sequence, *ignore_files,
+		excluded = sq.make_sequences(self.regular_sequence + ignore_files,
 									include_exts=['ext', 'dpx'])[2]
 		excluded_files = [x.abspath for x in excluded]
 		self.assertListEqual(ignore_files, excluded_files)
@@ -275,7 +275,7 @@ class TestMakeSequences(TestCase):
 			'file.10001.mov',
 			'file.10002.mov'
 		]
-		results = sq.make_sequences(*self.regular_sequence, *ignore_files,
+		results = sq.make_sequences(self.regular_sequence + ignore_files,
 									include_exts=['ext'])
 		sequences, non_sequences, excluded = results
 		for seq in sequences:
@@ -284,7 +284,7 @@ class TestMakeSequences(TestCase):
 			self.assertIsInstance(nseq, sq.File)
 
 	def test_make_sequence_ignore_padding(self):
-		sequences = sq.make_sequences(*self.regular_sequence)[0]
+		sequences = sq.make_sequences(self.regular_sequence)[0]
 		sequence_test = [
 			'basic_dot.#.ext',
 			'basic_underscore_#.ext',
@@ -309,7 +309,7 @@ class TestMakeSequences(TestCase):
 		self.assertListEqual(sequence_test, sequence_results)
 
 	def test_make_sequence_force_consistent_padding(self):
-		sequences = sq.make_sequences(*self.regular_sequence,
+		sequences = sq.make_sequences(self.regular_sequence,
 									  force_consistent_padding=True)[0]
 		sequence_test = [
 			'basic_dot.%01d.ext',
@@ -336,7 +336,7 @@ class TestMakeSequences(TestCase):
 		self.assertListEqual(sequence_test, sequence_results)
 
 	def test_make_sequences_non_sequences(self):
-		non_sequences = sq.make_sequences(*self.regular_sequence)[1]
+		non_sequences = sq.make_sequences(self.regular_sequence)[1]
 		sequence_test = [
 			'no_digits.ext',
 			'no_sequence_2017.ext',
@@ -355,7 +355,7 @@ class TestMakeSequences(TestCase):
 			'/abs/path/to/file.103.ext',
 			'/abs/path/to/file.0101.ext',
 		]
-		collisions = sq.make_sequences(*files)[2]
+		collisions = sq.make_sequences(files)[2]
 		collision_names = [x.abspath for x in collisions]
 		self.assertListEqual(['/abs/path/to/file.0101.ext'], collision_names)
 
@@ -365,7 +365,7 @@ class TestMakeSequences(TestCase):
 			('file.1.ext', {'size': 10}),
 			('file.2.ext', {'size': 10}),
 		]
-		sequences = sq.make_sequences(*files)[0]
+		sequences = sq.make_sequences(files)[0]
 		for frame in sequences[0]:
 			self.assertEqual(frame.size, 10)
 
@@ -375,7 +375,7 @@ class TestMakeSequences(TestCase):
 			('file.1.ext', [10, 20]),
 			('file.2.ext', [10, 20]),
 		]
-		sequences = sq.make_sequences(*files)[0]
+		sequences = sq.make_sequences(files)[0]
 		for frame in sequences[0]:
 			self.assertEqual(frame.size, 10)
 			self.assertEqual(frame.inode, 20)
