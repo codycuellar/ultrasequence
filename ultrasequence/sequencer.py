@@ -194,8 +194,11 @@ class Sequence(object):
 def make_sequences(*filenames, include_exts=None, #stats=None, get_stats=False,
 				   force_consistent_padding=False):
 	"""
-	
-	:param filenames: 
+	This function takes a list of filename path strings and attempts
+	to build sequence items out of groups of files in the same path
+	with the same naming structure.
+
+	:param filenames: list of filenames to process. These can have different
 	:param include_exts: 
 	:param force_consistent_padding: 
 	:return: 
@@ -223,7 +226,10 @@ def make_sequences(*filenames, include_exts=None, #stats=None, get_stats=False,
 			if seq_name not in sequences:
 				sequences[seq_name] = Sequence(_file, force_consistent_padding)
 			else:
-				sequences[seq_name].append(_file)
+				try:
+					sequences[seq_name].append(_file)
+				except IndexError:
+					excluded.append(_file)
 
 	sequences = [sequences[seq] for seq in sequences]
 	non_sequences += [sequences.pop(i)[seq.start] for i, seq in
