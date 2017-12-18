@@ -1,4 +1,4 @@
-VERSION = '0.0.2'
+VERSION = '0.1.0'
 NAME = 'ultrasequence'
 DESCRIPTION = 'An extremely fast file sequencing tool.'
 AUTHOR = 'Cody Cuellar'
