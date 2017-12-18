@@ -46,7 +46,11 @@ def split_extension(filename):
 
 class Stat(object):
 	"""
-	This class mocks object returned by os.stat on Unix platforms.
+	This class mocks object returned by os.stat on Unix platforms. The File
+	class passes dicts with **kwargs and iterables with *args. When passing
+	an iterable to File class, make sure the stats are int-like items in
+	the same order as the params in Stat.__init__.
+	
 	"""
 	def __init__(self, size=None, inode=None, ctime=None, mtime=None,
 				 atime=None, mode=None, dev=None, nlink=None, uid=None,
@@ -79,8 +83,20 @@ class File(object):
 	def __init__(self, filepath, stats=None, get_stats=False):
 		"""
 		Class which represents single files or frames on disk.
+		While initializing this object, it can be fed stat values
+		directly or can attempt to call them on the fly with
+		get_stats.
+		
+		When passing data into the stat argument, the object passed
+		in can be either an actual os.stat_result object, a dictionary
+		mapping that matches the sequencer.Stat paramater names, or an
+		iterable of int like items that matches the order of the 
+		sequencer.Stat class params.
 		
 		:param str filepath: the absolute filepath of the file
+		:param stats: dict or iterable to map to sequencer.Stat params
+			or os.stat_result object.
+		:param bool get_stats: when True, 
 		"""
 		self.abspath = filepath
 		self.path, self.name = os.path.split(filepath)
@@ -98,11 +114,12 @@ class File(object):
 		try:
 			if get_stats:
 				try:
-					self.stat = os.stat(filepath)
+					stats = os.stat(filepath)
 				except FileNotFoundError:
 					logger.info("File %s not found. Can't stat." % filepath)
-					raise TypeError
-			elif isinstance(stats, os.stat_result):
+					if stats is None:
+						raise TypeError
+			if isinstance(stats, os.stat_result):
 				self.stat = stats
 			elif isinstance(stats, dict):
 				self.stat = Stat(**stats)

@@ -137,6 +137,7 @@ class TestFile(TestCase):
 	def test_file_stat_list(self):
 		stats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 		file = sq.File('filename.ext', stats=stats)
+		self.assertIsInstance(file.stat, sq.Stat)
 		self.assertEqual(file.size, 1)
 		self.assertEqual(file.inode, 2)
 		self.assertEqual(file.ctime, 3)
@@ -155,6 +156,13 @@ class TestFile(TestCase):
 	def test_file_get_stat(self):
 		file = sq.File(__file__, get_stats=True)
 		self.assertIsInstance(file.stat, os.stat_result)
+
+	def test_file_get_stats_unsuccessful_fallback(self):
+		stats = {'size': 15}
+		file = sq.File('/not/a/file/path.none', stats=stats, get_stats=True)
+		self.assertIsInstance(file.stat, sq.Stat)
+		self.assertEqual(file.size, 15)
+		self.assertIsNone(file.inode)
 
 
 class TestSequence(TestCase):
