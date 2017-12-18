@@ -44,28 +44,39 @@ def split_extension(filename):
 	return head, ext
 
 
-# class Stat(object):
-# 	"""
-# 	This class mocks object returned by os.stat on Unix platforms.
-# 	"""
-# 	def __init__(self, size=None, inode=None, ctime=None, mtime=None,
-# 				 atime=None, mode=None, dev=None, nlink=None, uid=None,
-# 				 gid=None):
-# 		self.st_size = size
-# 		self.st_ino = inode
-# 		self.st_nlink = nlink
-# 		self.st_dev = dev
-# 		self.st_mode = mode
-# 		self.st_uid = uid
-# 		self.st_gid = gid
-# 		self.st_ctime = ctime
-# 		self.st_mtime = mtime
-# 		self.st_atime = atime
+class Stat(object):
+	"""
+	This class mocks object returned by os.stat on Unix platforms.
+	"""
+	def __init__(self, size=None, inode=None, ctime=None, mtime=None,
+				 atime=None, mode=None, dev=None, nlink=None, uid=None,
+				 gid=None):
+		self.st_size = size
+		self.st_ino = inode
+		self.st_nlink = nlink
+		self.st_dev = dev
+		self.st_mode = mode
+		self.st_uid = uid
+		self.st_gid = gid
+		self.st_ctime = ctime
+		self.st_mtime = mtime
+		self.st_atime = atime
+
+	def __getattr__(self, item):
+		ints = ['st_size', 'st_ino', 'st_nlink', 'st_dev', 'st_mode',
+				'st_uid', 'st_gid']
+		floats = ['st_ctime', 'st_mtime', 'st_atime']
+		try:
+			if item in ints:
+				return int(super(Stat, self).__getattribute__(item))
+			elif item in floats:
+				return float(super(Stat, self).__getattribute__(item))
+		except TypeError:
+			return None
 
 
 class File(object):
-	# def __init__(self, filepath, stats=None, get_stats=False):
-	def __init__(self, filepath):
+	def __init__(self, filepath, stats=None, get_stats=False):
 		"""
 		Class which represents single files or frames on disk.
 		
@@ -81,16 +92,23 @@ class File(object):
 		self.tail = '.'.join([tail, self.ext])
 		self.padding = len(self._framenum)
 
-		# if stats:
-		# 	self.stat = Stat(*stats)
-		# elif get_stats:
-		# 	try:
-		# 		self.stat = os.stat(filepath)
-		# 		logger.info('File %s not found.' % filepath)
-		# 	except FileNotFoundError:
-		# 		self.stat = Stat()
-		# else:
-		# 	self.stat = Stat()
+		try:
+			if get_stats:
+				try:
+					self.stat = os.stat(filepath)
+				except FileNotFoundError:
+					logger.info("File %s not found. Can't stat." % filepath)
+					raise TypeError
+			elif isinstance(stats, os.stat_result):
+				self.stat = stats
+			elif isinstance(stats, dict):
+				self.stat = Stat(**stats)
+			elif isinstance(stats, (list, tuple)):
+				self.stat = Stat(*stats)
+			else:
+				raise TypeError
+		except TypeError:
+			self.stat = Stat()
 
 	def __str__(self):
 		return self.abspath
@@ -108,6 +126,46 @@ class File(object):
 	@property
 	def frame_as_str(self):
 		return self._framenum
+
+	@property
+	def size(self):
+		return int(self.stat.st_size)
+
+	@property
+	def inode(self):
+		return int(self.stat.st_ino)
+
+	@property
+	def nlink(self):
+		return int(self.stat.st_nlink)
+
+	@property
+	def dev(self):
+		return int(self.stat.st_dev)
+
+	@property
+	def mode(self):
+		return int(self.stat.st_mode)
+
+	@property
+	def uid(self):
+		return int(self.stat.st_uid)
+
+	@property
+	def gid(self):
+		return int(self.stat.st_gid)
+
+	@property
+	def ctime(self):
+		return float(self.stat.st_ctime)
+
+	@property
+	def mtime(self):
+		return float(self.stat.st_mtime)
+
+	@property
+	def atime(self):
+		return float(self.stat.st_atime)
 
 	def get_seq_key(self, padding=False):
 		if not self._framenum:

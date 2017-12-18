@@ -109,6 +109,53 @@ class TestFile(TestCase):
 		self.assertEqual(file.get_seq_key(), '/path/to/file.ext')
 		self.assertEqual(file.get_seq_key(True), '/path/to/file.ext')
 
+	def test_file_stat_dict(self):
+		stats = {
+			'size': 1,
+			'inode': 2,
+			'nlink': 3,
+			'dev': 4,
+			'mode': 5,
+			'uid': 6,
+			'gid': 7,
+			'mtime': 8,
+			'ctime': 9,
+			'atime': 10
+		}
+		file = sq.File('filename.ext', stats=stats)
+		self.assertEqual(file.size, 1)
+		self.assertEqual(file.inode, 2)
+		self.assertEqual(file.nlink, 3)
+		self.assertEqual(file.dev, 4)
+		self.assertEqual(file.mode, 5)
+		self.assertEqual(file.uid, 6)
+		self.assertEqual(file.gid, 7)
+		self.assertEqual(file.mtime, 8)
+		self.assertEqual(file.ctime, 9)
+		self.assertEqual(file.atime, 10)
+
+	def test_file_stat_list(self):
+		stats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+		file = sq.File('filename.ext', stats=stats)
+		self.assertEqual(file.size, 1)
+		self.assertEqual(file.inode, 2)
+		self.assertEqual(file.ctime, 3)
+		self.assertEqual(file.mtime, 4)
+		self.assertEqual(file.atime, 5)
+		self.assertEqual(file.mode, 6)
+		self.assertEqual(file.dev, 7)
+		self.assertEqual(file.nlink, 8)
+		self.assertEqual(file.uid, 9)
+		self.assertEqual(file.gid, 10)
+
+	def test_file_os_stat(self):
+		file = sq.File(__file__, os.stat(__file__))
+		self.assertIsInstance(file.stat, os.stat_result)
+
+	def test_file_get_stat(self):
+		file = sq.File(__file__, get_stats=True)
+		self.assertIsInstance(file.stat, os.stat_result)
+
 
 class TestSequence(TestCase):
 
