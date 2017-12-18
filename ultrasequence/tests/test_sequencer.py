@@ -173,10 +173,10 @@ class TestSequence(TestCase):
 
 	def test_sequence_frame_range(self):
 		files = [
-			'/abs/path/to/film_101_old.tif',
-			'/abs/path/to/film_103_old.tif',
-			'/abs/path/to/film_105_old.tif',
-			'/abs/path/to/film_106_old.tif',
+			'/abs/path/to/file.101.ext',
+			'/abs/path/to/file.103.ext',
+			'/abs/path/to/file.105.ext',
+			'/abs/path/to/file.106.ext',
 		]
 		seq = sq.Sequence(files[0])
 		[seq.append(x) for x in files[1:]]
@@ -195,11 +195,34 @@ class TestMakeSequences(TestCase):
 		with open(TEST_SEQUENCES) as testA:
 			self.regular_sequence = [x.rstrip() for x in testA.readlines()]
 
-	def test_returns_three_lists(self):
+	def test_make_sequence_returns_three_lists(self):
 		results = sq.make_sequences(*self.regular_sequence)
 		self.assertEqual(len(results), 3)
 		for l in results:
 			self.assertIsInstance(l, list)
+
+	def test_make_sequence_include_exts_works(self):
+		ignore_files = [
+			'file.10001.mov',
+			'file.10002.mov'
+		]
+		excluded = sq.make_sequences(*self.regular_sequence, *ignore_files,
+									include_exts=['ext', 'dpx'])[2]
+		excluded_files = [x.abspath for x in excluded]
+		self.assertListEqual(ignore_files, excluded_files)
+
+	def test_make_sequence_returns_proper_instances(self):
+		ignore_files = [
+			'file.10001.mov',
+			'file.10002.mov'
+		]
+		results = sq.make_sequences(*self.regular_sequence, *ignore_files,
+									include_exts=['ext'])
+		sequences, non_sequences, excluded = results
+		for seq in sequences:
+			self.assertIsInstance(seq, sq.Sequence)
+		for nseq in non_sequences + excluded:
+			self.assertIsInstance(nseq, sq.File)
 
 	def test_make_sequence_ignore_padding(self):
 		sequences = sq.make_sequences(*self.regular_sequence)[0]
@@ -265,6 +288,18 @@ class TestMakeSequences(TestCase):
 		sequence_results = [x.abspath for x in non_sequences]
 		sequence_results.sort()
 		self.assertListEqual(sequence_test, sequence_results)
+
+	def test_make_sequence_handles_index_collision(self):
+		files = [
+			'/abs/path/to/file.101.ext',
+			'/abs/path/to/file.102.ext',
+			'/abs/path/to/file.103.ext',
+			'/abs/path/to/file.0101.ext',
+		]
+		collisions = sq.make_sequences(*files)[2]
+		collision_names = [x.abspath for x in collisions]
+		self.assertListEqual(['/abs/path/to/file.0101.ext'], collision_names)
+
 
 if __name__ == '__main__':
 	unittest.main()
