@@ -206,6 +206,9 @@ class Sequence(object):
 	def __repr__(self):
 		return "Sequence('%s', frames=%d)" % (self.seq_name, self.frames)
 
+	def __iter__(self):
+		return iter([self._frames[frame] for frame in self._frames])
+
 	def __getitem__(self, frames):
 		if isinstance(frames, slice):
 			return [self._frames[x] for x in
@@ -237,6 +240,13 @@ class Sequence(object):
 	@property
 	def missing_frame_count(self):
 		return self.end - (self.start - 1) - self.frames
+
+	@property
+	def size(self):
+		try:
+			return sum([file.size for file in self])
+		except TypeError:
+			return
 
 	def get_missing_frames(self):
 		expected = set(range(self.start, self.end + 1))
@@ -273,14 +283,14 @@ class Sequence(object):
 			self.padding = file.padding
 
 
-def make_sequences(*filenames, include_exts=None, #stats=None, get_stats=False,
+def make_sequences(*filelist, include_exts=None, get_stats=False,
 				   force_consistent_padding=False):
 	"""
 	This function takes a list of filename path strings and attempts
 	to build sequence items out of groups of files in the same path
 	with the same naming structure.
 
-	:param filenames: list of filenames to process. These can have different
+	:param filelist: list of filenames to process. These can have different
 	:param include_exts: 
 	:param force_consistent_padding: 
 	:return: 
@@ -297,8 +307,11 @@ def make_sequences(*filenames, include_exts=None, #stats=None, get_stats=False,
 	non_sequences = []
 	excluded = []
 
-	for filename in filenames:
-		_file = File(filename)
+	for file in filelist:
+		if isinstance(file, str):
+			_file = File(file, get_stats=get_stats)
+		elif isinstance(file, (tuple, list)) and len(file) == 2:
+			_file = File(*file, get_stats=get_stats)
 		if include_exts and _file.ext not in include_exts:
 			excluded.append(_file)
 		elif _file.frame is None:

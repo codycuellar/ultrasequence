@@ -235,6 +235,18 @@ class TestSequence(TestCase):
 		self.assertEqual(seq.missing_frame_count, 2)
 		self.assertEqual(seq.get_missing_frames(), {102, 104})
 
+	def test_sequence_size(self):
+		files = [
+			('file.0.ext', {'size': 10}),
+			('file.1.ext', {'size': 10}),
+			('file.2.ext', {'size': 10}),
+		]
+		sequence = sq.Sequence()
+		for file in files:
+			file = sq.File(*file)
+			sequence.append(file)
+		self.assertEqual(sequence.size, 30)
+
 
 class TestMakeSequences(TestCase):
 
@@ -346,6 +358,27 @@ class TestMakeSequences(TestCase):
 		collisions = sq.make_sequences(*files)[2]
 		collision_names = [x.abspath for x in collisions]
 		self.assertListEqual(['/abs/path/to/file.0101.ext'], collision_names)
+
+	def test_make_sequence_stats_as_dict(self):
+		files = [
+			('file.0.ext', {'size': 10}),
+			('file.1.ext', {'size': 10}),
+			('file.2.ext', {'size': 10}),
+		]
+		sequences = sq.make_sequences(*files)[0]
+		for frame in sequences[0]:
+			self.assertEqual(frame.size, 10)
+
+	def test_make_sequence_stats_as_list(self):
+		files = [
+			('file.0.ext', [10, 20]),
+			('file.1.ext', [10, 20]),
+			('file.2.ext', [10, 20]),
+		]
+		sequences = sq.make_sequences(*files)[0]
+		for frame in sequences[0]:
+			self.assertEqual(frame.size, 10)
+			self.assertEqual(frame.inode, 20)
 
 
 if __name__ == '__main__':
