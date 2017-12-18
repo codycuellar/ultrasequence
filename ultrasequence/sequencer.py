@@ -9,6 +9,17 @@ FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
 
 
 def extract_frame(name):
+	"""
+	This function extracts the last set of digits in the string name and
+	assumes it is the frame number when attempting to match with other file
+	names. This function should be passed basenames only, so it doesn't
+	attempt to sequence directory names.
+
+	:param str name: file basename without dir  
+	:return: 3-pair tuple consisting of the head (all characters preceding the
+			 last set of digits, the frame number (last set of digits), and
+			 tail (all digits succeeding the frame number).
+	"""
 	frame_match = re.match(FRAMENUM_RE, name)
 	if frame_match:
 		groups = frame_match.groups()
@@ -21,6 +32,10 @@ def extract_frame(name):
 
 
 def split_extension(filename):
+	"""
+	Splits the extension off the filename and returns a tuple of the 
+	base filename and the extension.
+	"""
 	parts = filename.split('.')
 	if len(parts) < 2:
 		return parts[0], ''
@@ -52,10 +67,9 @@ class File(object):
 	# def __init__(self, filepath, stats=None, get_stats=False):
 	def __init__(self, filepath):
 		"""
+		Class which represents single files or frames on disk.
 		
-		:param filepath: 
-		:param ext: 
-		:param stats: 
+		:param str filepath: the absolute filepath of the file
 		"""
 		self.abspath = filepath
 		self.path, self.name = os.path.split(filepath)
@@ -108,9 +122,14 @@ class File(object):
 class Sequence(object):
 	def __init__(self, file=None, force_consistent_padding=False):
 		"""
+		Class representing a sequence of matching filenames. The frames
+		are stored in a dicitonary with the frame numbers as keys. Sets
+		are used for fast operations in calculating missing frames.
 		
-		:param file: 
-		:param force_consistent_padding: 
+		:param file: File object or filename string to base the object
+			instantiation off of.
+		:param bool force_consistent_padding: Setting to True will disallow
+			new frames from being appended if the frame padding differs.
 		"""
 		self._frames = {}
 		self.seq_name = ''
@@ -167,6 +186,11 @@ class Sequence(object):
 		return expected - actual
 
 	def append(self, file):
+		"""
+		Append a new frame to the sequence.
+		 
+		:param file: File object or string to append to Sequence
+		"""
 		if not isinstance(file, File):
 			if isinstance(file, str):
 				file = File(file)
