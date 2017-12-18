@@ -129,43 +129,73 @@ class File(object):
 
 	@property
 	def size(self):
-		return int(self.stat.st_size)
+		try:
+			return int(self.stat.st_size)
+		except TypeError:
+			return
 
 	@property
 	def inode(self):
-		return int(self.stat.st_ino)
+		try:
+			return int(self.stat.st_ino)
+		except TypeError:
+			return
 
 	@property
 	def nlink(self):
-		return int(self.stat.st_nlink)
+		try:
+			return int(self.stat.st_nlink)
+		except TypeError:
+			return
 
 	@property
 	def dev(self):
-		return int(self.stat.st_dev)
+		try:
+			return int(self.stat.st_dev)
+		except TypeError:
+			return
 
 	@property
 	def mode(self):
-		return int(self.stat.st_mode)
+		try:
+			return int(self.stat.st_mode)
+		except TypeError:
+			return
 
 	@property
 	def uid(self):
-		return int(self.stat.st_uid)
+		try:
+			return int(self.stat.st_uid)
+		except TypeError:
+			return
 
 	@property
 	def gid(self):
-		return int(self.stat.st_gid)
+		try:
+			return int(self.stat.st_gid)
+		except TypeError:
+			return
 
 	@property
 	def ctime(self):
-		return float(self.stat.st_ctime)
+		try:
+			return float(self.stat.st_ctime)
+		except TypeError:
+			return
 
 	@property
 	def mtime(self):
-		return float(self.stat.st_mtime)
+		try:
+			return float(self.stat.st_mtime)
+		except TypeError:
+			return
 
 	@property
 	def atime(self):
-		return float(self.stat.st_atime)
+		try:
+			return float(self.stat.st_atime)
+		except TypeError:
+			return
 
 	def get_seq_key(self, padding=False):
 		if not self._framenum:
