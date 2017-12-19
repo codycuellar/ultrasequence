@@ -42,6 +42,20 @@ def split_extension(filename):
 	return head, ext
 
 
+def frame_ranges_to_string(frame_list):
+	ranges = [[frame_list.pop(0)]]
+	range_i = 0
+	for x in frame_list:
+		if x - 1 == ranges[range_i][-1]:
+			ranges[range_i].append(x)
+		else:
+			range_i += 1
+			ranges.append([x])
+	list_of_ranges = ['-'.join((str(x[0]), str(x[-1]))) for x in ranges]
+	complete_string = '[' + ', '.join(list_of_ranges) + ']'
+	return complete_string
+
+
 class Stat(object):
 	"""
 	This class mocks object returned by os.stat on Unix platforms. The File
@@ -339,6 +353,111 @@ class Sequence(object):
 			self.inconsistent_padding = True
 			self.padding = file.padding
 		self._frames[file.frame] = file
+
+	def formatter(self, format=DEFAULT_FORMAT):
+		"""
+		This formatter will replace any of the formatting directives
+		found in the format argument with it's string part.
+		
+		 --------------------------------------------------------------------
+		|  SAMPLE NAME:   '/path/to/file_name.0101.final.ext'
+		 --------------------------------------------------------------------
+		
+		  FMT     DESCRIPTION                      EXAMPLE
+		 --------------------------------------------------------------------
+		| '%p' |  pathaname                      |  '/path/to/'
+		|--------------------------------------------------------------------
+		| '%h' |  head chars of filename         |  'file_name.'
+		|--------------------------------------------------------------------
+		| '%H' |  all chars preceeding frame #   |  '/path/to/file_name.'
+		|--------------------------------------------------------------------
+		| '%f' |  number of actual frames        |  '42'
+		|--------------------------------------------------------------------
+		| '%r' |  implied frame range            |  '[0101-0150]'
+		|--------------------------------------------------------------------
+		| '%R' |  broken explicit frame range    |  '[101-140, 148, 150]'
+		|      |  ignores padding                |
+		|--------------------------------------------------------------------
+		| '%m' |  total number of missing frames |  '8'
+		|--------------------------------------------------------------------
+		| '%M' |  broken explicit missing ranges |  '[141-147, 149]'
+		|      |  ignores padding                |
+		|--------------------------------------------------------------------
+		| '%d' |  '#' signs denoting padding     |  '####'
+		|--------------------------------------------------------------------
+		| '%D' |  '%' style padding              |  '%04d'
+		|--------------------------------------------------------------------
+		| '%t' |  tail chars after frame, no ext |  '.final'
+		|--------------------------------------------------------------------
+		| '%T' |  all tail chars after frame     |  '.final.ext'
+		|--------------------------------------------------------------------
+		| '%e' |  extension without dot          |  'ext'
+		 --------------------------------------------------------------------
+
+		:param format: the string directive for the formatter to convert
+		:return: the formatted string
+		"""
+
+		# Call functions to minimize processes run during formatter execution.
+		directive_mapper = {
+			'%p': self.__path,
+			'%h': self.__namehead,
+			'%H': self.__head,
+			'%f': self.__num_frames,
+			'%r': self.__short_range,
+			'%R': self.__explicit_range,
+			'%m': self.__num_missing_frames,
+			'%M': self.__explicit_missing_range,
+			'%d': self.__pound_padding,
+			'%D': self.__formatted_padding,
+			'%t': self.__tail_without_ext,
+			'%T': self.__tail,
+			'%e': self.__ext,
+		}
+		for x in directive_mapper:
+			if x in format:
+				format = format.replace(x, directive_mapper[x]())
+		return format
+
+	def __path(self):
+		return self.path
+
+	def __namehead(self):
+		return self.namehead
+
+	def __head(self):
+		return self.head
+
+	def __num_frames(self):
+		return str(self.frames)
+
+	def __short_range(self):
+		return '[' + str(self[self.start].frame_as_str) + \
+			   '-' + str(self[self.end].frame_as_str) + ']'
+
+	def __explicit_range(self):
+		return frame_ranges_to_string(self.get_frames())
+
+	def __num_missing_frames(self):
+		return str(self.missing_frames)
+
+	def __explicit_missing_range(self):
+		return frame_ranges_to_string(self.get_missing_frames())
+
+	def __pound_padding(self):
+		return '#' * self.padding
+
+	def __formatted_padding(self):
+		return '%%0%dd' % self.padding
+
+	def __tail_without_ext(self):
+		return '.'.join('.'.split(self.tail)[:-1])
+
+	def __tail(self):
+		return self.tail
+
+	def __ext(self):
+		return self.ext
 
 
 def make_sequences(filelist, include_exts=None, get_stats=False,
