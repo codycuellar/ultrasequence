@@ -228,18 +228,25 @@ class File(object):
 		except TypeError:
 			return
 
-	def get_seq_key(self, padding=False):
+	def get_seq_key(self, ignore_padding=True):
+		"""
+		Make sequence name identifier
+		
+		:param bool padding: enforce padding 
+		:return: sequence name with '#' for frame number if padding ignored
+			or standerd padding format '%0#d' where '#' is padding amount. 
+		"""
 		if not self._framenum:
 			digits = ''
-		elif padding:
-			digits = '%%0%dd' % self.padding
-		else:
+		elif ignore_padding:
 			digits = '#'
+		else:
+			digits = '%%0%dd' % self.padding
 		return self.head + digits + self.tail
 
 
 class Sequence(object):
-	def __init__(self, file=None, force_consistent_padding=False):
+	def __init__(self, file=None, ignore_padding=True):
 		"""
 		Class representing a sequence of matching filenames. The frames
 		are stored in a dicitonary with the frame numbers as keys. Sets
@@ -247,7 +254,7 @@ class Sequence(object):
 		
 		:param file: File object or filename string to base the object
 			instantiation off of.
-		:param bool force_consistent_padding: Setting to True will disallow
+		:param bool ignore_padding: Setting to False will disallow
 			new frames from being appended if the frame padding differs.
 		"""
 		self._frames = {}
@@ -259,7 +266,7 @@ class Sequence(object):
 		self.ext = ''
 		self.padding = 0
 		self.inconsistent_padding = False
-		self.force_consistent_padding = force_consistent_padding
+		self.ignore_padding = ignore_padding
 		if file is not None:
 			self.append(file)
 
@@ -333,7 +340,7 @@ class Sequence(object):
 			if isinstance(file, str):
 				file = File(file)
 				if len(self._frames) > 0 and file.get_seq_key(
-						self.force_consistent_padding) != self.seq_name:
+						self.ignore_padding) != self.seq_name:
 					raise ValueError('%s is not a member of %s. Not appending.'
 									 % (file, repr(self)))
 		if file.frame is None:
@@ -345,7 +352,7 @@ class Sequence(object):
 			self.tail = file.tail
 			self.ext = file.ext
 			self.padding = file.padding
-			self.seq_name = file.get_seq_key(self.force_consistent_padding)
+			self.seq_name = file.get_seq_key(self.ignore_padding)
 		elif file.frame in self._frames:
 			raise IndexError('%s already in sequence as %s' %
 						   (file.name, self._frames[file.frame]))
