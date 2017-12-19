@@ -102,12 +102,12 @@ class TestFile(TestCase):
 
 	def test_get_seq_key_padding(self):
 		file = sq.File('/path/to/file.1000.ext')
-		self.assertEqual(file.get_seq_key(True), '/path/to/file.%04d.ext')
+		self.assertEqual(file.get_seq_key(ignore_padding=False), '/path/to/file.%04d.ext')
 
 	def test_get_seq_key_no_framenum(self):
 		file = sq.File('/path/to/file.ext')
 		self.assertEqual(file.get_seq_key(), '/path/to/file.ext')
-		self.assertEqual(file.get_seq_key(True), '/path/to/file.ext')
+		self.assertEqual(file.get_seq_key(ignore_padding=False), '/path/to/file.ext')
 
 	def test_file_stat_dict(self):
 		stats = {
@@ -234,7 +234,7 @@ class TestSequence(TestCase):
 
 	def test_sequence_force_consistent_padding(self):
 		file = sq.File('/path/to/file.0100.ext')
-		seq = sq.Sequence(file, force_consistent_padding=True)
+		seq = sq.Sequence(file, ignore_padding=False)
 		self.assertEqual(seq.seq_name, '/path/to/file.%04d.ext')
 		with self.assertRaises(ValueError):
 			seq.append('/path/to/file.00100.ext')
@@ -338,7 +338,7 @@ class TestMakeSequences(TestCase):
 
 	def test_make_sequence_force_consistent_padding(self):
 		sequences = sq.make_sequences(self.regular_sequence,
-									  force_consistent_padding=True)[0]
+									  ignore_padding=False)[0]
 		sequence_test = [
 			'basic_dot.%01d.ext',
 			'basic_dot.%02d.ext',

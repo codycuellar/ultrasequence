@@ -512,7 +512,7 @@ class Sequence(object):
 
 
 def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
-				   force_consistent_padding=False):
+				   ignore_padding=True):
 	"""
 	This function takes a list of filename path strings and attempts
 	to build sequence items out of groups of files in the same path
@@ -548,9 +548,9 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 		elif _file.frame is None:
 			non_sequences.append(_file)
 		else:
-			seq_name = _file.get_seq_key(force_consistent_padding)
+			seq_name = _file.get_seq_key(ignore_padding)
 			if seq_name not in sequences:
-				sequences[seq_name] = Sequence(_file, force_consistent_padding)
+				sequences[seq_name] = Sequence(_file, ignore_padding)
 			else:
 				try:
 					sequences[seq_name].append(_file)
