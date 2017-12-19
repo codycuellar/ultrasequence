@@ -166,39 +166,52 @@ class TestFile(TestCase):
 
 
 class TestSequence(TestCase):
+	def setUp(self):
+		missing_files = [
+			'/abs/path/to/file_0100_name.ext',
+			'/abs/path/to/file_0101_name.ext',
+			'/abs/path/to/file_0102_name.ext',
+			'/abs/path/to/file_0104_name.ext',
+			'/abs/path/to/file_0107_name.ext',
+			'/abs/path/to/file_0108_name.ext',
+			'/abs/path/to/file_01010_name.ext',
+		]
+		self.missing = sq.Sequence()
+		for m in missing_files:
+			self.missing.append(m)
+		contiguous_files = [
+			'/abs/path/to/file_0100_name.ext',
+			'/abs/path/to/file_0101_name.ext',
+			'/abs/path/to/file_0102_name.ext',
+			'/abs/path/to/file_0103_name.ext',
+		]
+		self.contiguous = sq.Sequence()
+		for m in contiguous_files:
+			self.contiguous.append(m)
 
-	def test_sequence_init(self):
-		seq = sq.Sequence()
-		self.assertDictEqual(seq._frames, {})
-		self.assertEqual(seq.seq_name, '')
-		self.assertEqual(seq.head, '')
-		self.assertEqual(seq.tail, '')
-		self.assertEqual(seq.ext, '')
-		self.assertEqual(seq.padding, 0)
-		self.assertEqual(seq.inconsistent_padding, False)
-
-	def test_sequence_append_file(self):
-		file = sq.File('/path/to/file.0100.ext')
-		seq = sq.Sequence(file)
-		self.assertDictEqual(seq._frames, {100: file})
+	def test_sequence_init_append(self):
+		seq = sq.Sequence('/path/to/file.0100.ext')
+		self.assertListEqual(list(seq._frames), [100])
 		self.assertEqual(seq.seq_name, '/path/to/file.#.ext')
+		self.assertEqual(seq.namehead, 'file.')
 		self.assertEqual(seq.head, '/path/to/file.')
+		self.assertEqual(seq.path, '/path/to')
 		self.assertEqual(seq.tail, '.ext')
 		self.assertEqual(seq.ext, 'ext')
 		self.assertEqual(seq.padding, 4)
 		self.assertEqual(seq.inconsistent_padding, False)
+
+	def test_sequence_append_file(self):
+		file1 = sq.File('/path/to/file.0100.ext')
+		seq = sq.Sequence(file1)
+		seq.append(sq.File('/path/to/file.0101.ext'))
+		self.assertEqual(seq.frames, 2)
 
 	def test_sequence_append_string(self):
 		file = '/path/to/file.0100.ext'
 		seq = sq.Sequence(file)
-		self.assertEqual(len(seq._frames), 1)
-		self.assertIsInstance(seq._frames[100], sq.File)
-		self.assertEqual(seq.seq_name, '/path/to/file.#.ext')
-		self.assertEqual(seq.head, '/path/to/file.')
-		self.assertEqual(seq.tail, '.ext')
-		self.assertEqual(seq.ext, 'ext')
-		self.assertEqual(seq.padding, 4)
-		self.assertEqual(seq.inconsistent_padding, False)
+		seq.append('/path/to/file.0101.ext')
+		self.assertEqual(seq.frames, 2)
 
 	def test_sequence_append_exact_dupe(self):
 		file = sq.File('/path/to/file.0100.ext')
@@ -226,22 +239,15 @@ class TestSequence(TestCase):
 		with self.assertRaises(ValueError):
 			seq.append('/path/to/file.00100.ext')
 
-	def test_sequence_frame_range(self):
-		files = [
-			'/abs/path/to/file.101.ext',
-			'/abs/path/to/file.103.ext',
-			'/abs/path/to/file.105.ext',
-			'/abs/path/to/file.106.ext',
-		]
-		seq = sq.Sequence(files[0])
-		[seq.append(x) for x in files[1:]]
-		self.assertEqual(seq.start, 101)
-		self.assertEqual(seq.end, 106)
-		self.assertEqual(seq.frames, 4)
-		self.assertEqual(seq.implied_frames, 6)
-		self.assertTrue(seq.is_missing_frames)
-		self.assertEqual(seq.missing_frame_count, 2)
-		self.assertEqual(seq.get_missing_frames(), {102, 104})
+	# def test_contiguous_sequence_frame_range(self):
+	# 	seq = sq.Sequence(self.contiguous[0])
+	# 	[seq.append(x) for x in self.contiguous[1:]]
+	# 	self.assertEqual(seq.start, 100)
+	# 	self.assertEqual(seq.end, 103)
+	# 	self.assertEqual(seq.frames, 4)
+	# 	self.assertEqual(seq.implied_frames, 4)
+	# 	self.assertEqual(seq.missing_frames, 2)
+	# 	self.assertListEqual(seq.get_missing_frames(), [102, 104])
 
 	def test_sequence_size(self):
 		files = [
@@ -256,6 +262,20 @@ class TestSequence(TestCase):
 		self.assertEqual(sequence.size, 30)
 
 
+# class TestSequenceFormatting(TestCase):
+# 	def setUp(self):
+# 		files = [
+# 			'/abs/path/to/file_0100_name.ext',
+# 			'/abs/path/to/file_0101_name.ext',
+# 			'/abs/path/to/file_0102_name.ext',
+# 			'/abs/path/to/file_0104_name.ext',
+# 			'/abs/path/to/file_0107_name.ext',
+# 			'/abs/path/to/file_0108_name.ext',
+# 			'/abs/path/to/file_01010_name.ext',
+# 		]
+# 		seq = sq.Sequence()
+
+
 class TestMakeSequences(TestCase):
 
 	def setUp(self):
@@ -264,7 +284,7 @@ class TestMakeSequences(TestCase):
 
 	def test_make_sequence_returns_three_lists(self):
 		results = sq.make_sequences(self.regular_sequence)
-		self.assertEqual(len(results), 3)
+		self.assertEqual(len(results), 4)
 		for l in results:
 			self.assertIsInstance(l, list)
 
@@ -285,7 +305,7 @@ class TestMakeSequences(TestCase):
 		]
 		results = sq.make_sequences(self.regular_sequence + ignore_files,
 									include_exts=['ext'])
-		sequences, non_sequences, excluded = results
+		sequences, non_sequences, excluded, collisions = results
 		for seq in sequences:
 			self.assertIsInstance(seq, sq.Sequence)
 		for nseq in non_sequences + excluded:
@@ -363,7 +383,7 @@ class TestMakeSequences(TestCase):
 			'/abs/path/to/file.103.ext',
 			'/abs/path/to/file.0101.ext',
 		]
-		collisions = sq.make_sequences(files)[2]
+		collisions = sq.make_sequences(files)[3]
 		collision_names = [x.abspath for x in collisions]
 		self.assertListEqual(['/abs/path/to/file.0101.ext'], collision_names)
 
