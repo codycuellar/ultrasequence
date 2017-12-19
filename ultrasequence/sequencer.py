@@ -101,8 +101,8 @@ class File(object):
 		self._base, self.ext = split_extension(self.name)
 
 		parts = extract_frame(self._base)
-		head, self._framenum, tail = parts
-		self.head = os.path.join(self.path, head)
+		self.namehead, self._framenum, tail = parts
+		self.head = os.path.join(self.path, self.namehead)
 		if not self.ext:
 			self.tail = ''
 		else:
@@ -238,6 +238,8 @@ class Sequence(object):
 		"""
 		self._frames = {}
 		self.seq_name = ''
+		self.path = ''
+		self.namehead = ''
 		self.head = ''
 		self.tail = ''
 		self.ext = ''
@@ -251,7 +253,11 @@ class Sequence(object):
 		return self.seq_name
 
 	def __repr__(self):
-		return "Sequence('%s', frames=%d)" % (self.seq_name, self.frames)
+		return "Sequence('%s', frames=%d)" % (
+			self.formatter('%H%D%T'), self.frames)
+
+	def __len__(self):
+		return len(self._frames)
 
 	def __iter__(self):
 		return iter([self._frames[frame] for frame in self._frames])
@@ -314,8 +320,10 @@ class Sequence(object):
 					raise ValueError('%s is not a member of %s. Not appending.'
 									 % (file, repr(self)))
 		if file.frame is None:
-			raise ValueError('%s is not a sequencable item.' % str(file))
+			raise ValueError('%s can not be sequenced.' % str(file))
 		if not self.frames:
+			self.namehead = file.namehead
+			self.path = file.path
 			self.head = file.head
 			self.tail = file.tail
 			self.ext = file.ext
