@@ -1,11 +1,9 @@
 import os
 import re
-import logging
 
-
-logger = logging.getLogger()
 
 FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
+DEFAULT_FORMAT = '%H%r%T'
 
 
 def extract_frame(name):
@@ -116,7 +114,6 @@ class File(object):
 				try:
 					stats = os.stat(filepath)
 				except FileNotFoundError:
-					logger.info("File %s not found. Can't stat." % filepath)
 					if stats is None:
 						raise TypeError
 			if isinstance(stats, os.stat_result):
