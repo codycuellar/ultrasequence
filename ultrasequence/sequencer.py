@@ -361,6 +361,7 @@ def make_sequences(filelist, include_exts=None, get_stats=False,
 	sequences = {}
 	non_sequences = []
 	excluded = []
+	collisions = []
 
 	for file in filelist:
 		if isinstance(file, str):
@@ -379,10 +380,10 @@ def make_sequences(filelist, include_exts=None, get_stats=False,
 				try:
 					sequences[seq_name].append(_file)
 				except IndexError:
-					excluded.append(_file)
+					collisions.append(_file)
 
 	sequences = [sequences[seq] for seq in sequences]
 	non_sequences += [sequences.pop(i)[seq.start] for i, seq in
 					  reversed(list(enumerate(sequences))) if seq.frames == 1]
 
-	return sequences, non_sequences, excluded
+	return sequences, non_sequences, excluded, collisions
