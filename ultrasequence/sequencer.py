@@ -332,13 +332,13 @@ class Sequence(object):
 			self.ext = file.ext
 			self.padding = file.padding
 			self.seq_name = file.get_seq_key(self.force_consistent_padding)
-		if file.frame in self._frames:
+		elif file.frame in self._frames:
 			raise IndexError('%s already in sequence as %s' %
 						   (file.name, self._frames[file.frame]))
-		self._frames[file.frame] = file
-		if self.padding < file.padding:
+		elif self.padding < file.padding:
 			self.inconsistent_padding = True
 			self.padding = file.padding
+		self._frames[file.frame] = file
 
 
 def make_sequences(filelist, include_exts=None, get_stats=False,
