@@ -460,7 +460,7 @@ class Sequence(object):
 		return self.ext
 
 
-def make_sequences(filelist, include_exts=None, get_stats=False,
+def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 				   force_consistent_padding=False):
 	"""
 	This function takes a list of filename path strings and attempts
@@ -468,17 +468,19 @@ def make_sequences(filelist, include_exts=None, get_stats=False,
 	with the same naming structure.
 
 	:param filelist: list of filenames to process. These can have different
-	:param include_exts: 
-	:param force_consistent_padding: 
-	:return: 
+	:param include_exts: an iterable of string extensions to include in the
+		sequencing process
+	:param force_consistent_padding: force sequences with different padding to
+		to be separate sequences.
+	:return: *sequences, *non_sequences, *excluded, *collisions
 	"""
 	if not include_exts:
 		include_exts = set()
 	else:
 		set(include_exts)
 
-	# if not stats:
-	# 	stats = {}
+	if not stats:
+		stats = {}
 
 	sequences = {}
 	non_sequences = []
@@ -487,9 +489,9 @@ def make_sequences(filelist, include_exts=None, get_stats=False,
 
 	for file in filelist:
 		if isinstance(file, str):
-			_file = File(file, get_stats=get_stats)
+			_file = File(file, stats=stats, get_stats=get_stats)
 		elif isinstance(file, (tuple, list)) and len(file) == 2:
-			_file = File(*file, get_stats=get_stats)
+			_file = File(file[0], stats=file[1], get_stats=get_stats)
 		if include_exts and _file.ext not in include_exts:
 			excluded.append(_file)
 		elif _file.frame is None:
