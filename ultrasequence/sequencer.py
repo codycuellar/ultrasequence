@@ -301,10 +301,13 @@ class Sequence(object):
 		except TypeError:
 			return
 
+	def get_frames(self):
+		return sorted(list(self._frames))
+
 	def get_missing_frames(self):
-		expected = set(range(self.start, self.end + 1))
+		implied = set(range(self.start, self.end + 1))
 		actual = set(self._frames)
-		return expected - actual
+		return list(sorted(implied - actual))
 
 	def append(self, file):
 		"""
