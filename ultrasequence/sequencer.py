@@ -271,14 +271,6 @@ class Sequence(object):
 		return self._frames[frames]
 
 	@property
-	def frames(self):
-		return len(self._frames)
-
-	@property
-	def implied_frames(self):
-		return self.end - self.start + 1
-
-	@property
 	def start(self):
 		return min(self._frames)
 
@@ -287,12 +279,20 @@ class Sequence(object):
 		return max(self._frames)
 
 	@property
-	def is_missing_frames(self):
-		return self.frames != self.implied_frames
+	def frames(self):
+		return len(self)
 
 	@property
-	def missing_frame_count(self):
+	def implied_frames(self):
+		return self.end - self.start + 1
+
+	@property
+	def missing_frames(self):
 		return self.end - (self.start - 1) - self.frames
+
+	@property
+	def is_missing_frames(self):
+		return self.frames != self.implied_frames
 
 	@property
 	def size(self):
