@@ -48,7 +48,7 @@ def frame_ranges_to_string(frame_list):
 	Take a flat list of ordered numbers and make a string representation
 	of the ranges.
 	
-	:param list frame_list: 
+	:param iterable frame_list: sorted list of frame numbers
 	:return: string of broken frame ranges (i.e '[10-14, 16, 20-25]')
 	"""
 	if not frame_list:

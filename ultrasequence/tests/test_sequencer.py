@@ -262,18 +262,39 @@ class TestSequence(TestCase):
 		self.assertEqual(sequence.size, 30)
 
 
-# class TestSequenceFormatting(TestCase):
-# 	def setUp(self):
-# 		files = [
-# 			'/abs/path/to/file_0100_name.ext',
-# 			'/abs/path/to/file_0101_name.ext',
-# 			'/abs/path/to/file_0102_name.ext',
-# 			'/abs/path/to/file_0104_name.ext',
-# 			'/abs/path/to/file_0107_name.ext',
-# 			'/abs/path/to/file_0108_name.ext',
-# 			'/abs/path/to/file_01010_name.ext',
-# 		]
-# 		seq = sq.Sequence()
+class TestFrameRangesToString(TestCase):
+
+	def test_conver_list(self):
+		frames = [100, 101, 102, 104, 107, 108, 1010]
+		result = sq.frame_ranges_to_string(frames)
+		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
+
+	def test_convert_tuple(self):
+		frames = (100, 101, 102, 104, 107, 108, 1010)
+		result = sq.frame_ranges_to_string(frames)
+		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
+
+	def test_convert_empty_list(self):
+		result = sq.frame_ranges_to_string([])
+		self.assertEqual(result, '[]')
+
+	def test_convert_single_item(self):
+		result = sq.frame_ranges_to_string([5])
+		self.assertEqual(result, '[5]')
+
+
+class TestSequenceFormatting(TestCase):
+	def setUp(self):
+		files = [
+			'/abs/path/to/file_0100_name.ext',
+			'/abs/path/to/file_0101_name.ext',
+			'/abs/path/to/file_0102_name.ext',
+			'/abs/path/to/file_0104_name.ext',
+			'/abs/path/to/file_0107_name.ext',
+			'/abs/path/to/file_0108_name.ext',
+			'/abs/path/to/file_01010_name.ext',
+		]
+		seq = sq.Sequence()
 
 
 class TestMakeSequences(TestCase):
