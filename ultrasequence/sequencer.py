@@ -605,7 +605,7 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 	if isinstance(filelist, str) and os.path.isdir(filelist):
 		filelist = get_files_in_directory(filelist)
 
-	elif isinstance(filelist, (list, tuple)):
+	if isinstance(filelist, (list, tuple)):
 		for _file in filelist:
 			if isinstance(_file, str):
 				_file = File(_file, stats=stats, get_stats=get_stats)

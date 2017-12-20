@@ -261,6 +261,21 @@ class TestSequence(TestCase):
 			sequence.append(file)
 		self.assertEqual(sequence.size, 30)
 
+	def test_get_missing_frames(self):
+		files = [
+			'/abs/path/to/file_0100_name.ext',
+			'/abs/path/to/file_0101_name.ext',
+			'/abs/path/to/file_0103_name.ext',
+			'/abs/path/to/file_0105_name.ext',
+			'/abs/path/to/file_0106_name.ext',
+			'/abs/path/to/file_0107_name.ext',
+		]
+		seq = sq.Sequence()
+		for file in files:
+			seq.append(file)
+		self.assertListEqual(seq.get_missing_frames(), [102, 104])
+
+
 
 class TestFrameRangesToString(TestCase):
 
