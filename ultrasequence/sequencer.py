@@ -413,9 +413,8 @@ class Sequence(object):
 
 	def get_missing_frames(self):
 		""" Get list of frame numbers missing between start and end frame """
-		implied = set(range(self.start, self.end + 1))
-		actual = set(self._frames)
-		return list(sorted(implied - actual))
+		implied = range(self.start, self.end + 1)
+		return [frame for frame in implied if frame not in self._frames]
 
 	def append(self, file):
 		"""
