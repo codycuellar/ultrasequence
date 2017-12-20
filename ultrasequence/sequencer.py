@@ -48,9 +48,13 @@ def frame_ranges_to_string(frame_list):
 	Take a flat list of ordered numbers and make a string representation
 	of the ranges.
 	
-	:param iterable frame_list: 
+	:param list frame_list: 
 	:return: string of broken frame ranges (i.e '[10-14, 16, 20-25]')
 	"""
+	if not frame_list:
+		return '[]'
+	if not isinstance(frame_list, list):
+		frame_list = list(frame_list)
 	ranges = [[frame_list.pop(0)]]
 	range_i = 0
 	for x in frame_list:
@@ -59,7 +63,12 @@ def frame_ranges_to_string(frame_list):
 		else:
 			range_i += 1
 			ranges.append([x])
-	list_of_ranges = ['-'.join((str(x[0]), str(x[-1]))) for x in ranges]
+	list_of_ranges = []
+	for x in ranges:
+		if len(x) > 1:
+			list_of_ranges.append('-'.join([str(x[0]), str(x[-1])]))
+		else:
+			list_of_ranges.append(str(x[0]))
 	complete_string = '[' + ', '.join(list_of_ranges) + ']'
 	return complete_string
 
@@ -293,11 +302,11 @@ class Sequence(object):
 			self.append(file)
 
 	def __str__(self):
-		return self.seq_name
+		return self.formatter(DEFAULT_FORMAT)
 
 	def __repr__(self):
 		return "Sequence('%s', frames=%d)" % (
-			self.formatter('%H%D%T'), self.frames)
+			self.formatter(DEFAULT_FORMAT), self.frames)
 
 	def __len__(self):
 		return len(self._frames)
