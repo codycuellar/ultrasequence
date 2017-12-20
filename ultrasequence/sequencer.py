@@ -189,82 +189,122 @@ class File(object):
 	@property
 	def size(self):
 		""" Stat size of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_size)
-		except TypeError:
-			return
+		if not self.stat.st_size:
+			try:
+				self.stat.st_size = os.stat(self.abspath).st_size
+				return self.stat.st_size
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_size
 
 	@property
 	def inode(self):
 		""" Stat inode of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_ino)
-		except TypeError:
-			return
+		if not self.stat.st_ino:
+			try:
+				self.stat.st_ino = os.stat(self.abspath).st_ino
+				return self.stat.st_ino
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_ino
 
 	@property
 	def nlink(self):
 		""" Stat nlink of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_nlink)
-		except TypeError:
-			return
+		if not self.stat.st_nlink:
+			try:
+				self.stat.st_nlink = os.stat(self.abspath).st_nlink
+				return self.stat.st_nlink
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_nlink
 
 	@property
 	def dev(self):
 		""" Stat dev of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_dev)
-		except TypeError:
-			return
+		if not self.stat.st_dev:
+			try:
+				self.stat.st_dev = os.stat(self.abspath).st_dev
+				return self.stat.st_dev
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_dev
 
 	@property
 	def mode(self):
 		""" Stat mode of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_mode)
-		except TypeError:
-			return
+		if not self.stat.st_mode:
+			try:
+				self.stat.st_mode = os.stat(self.abspath).st_mode
+				return self.stat.st_mode
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_mode
 
 	@property
 	def uid(self):
 		""" Stat uid of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_uid)
-		except TypeError:
-			return
+		if not self.stat.st_uid:
+			try:
+				self.stat.st_uid = os.stat(self.abspath).st_uid
+				return self.stat.st_gid
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_uid
 
 	@property
 	def gid(self):
 		""" Stat gid of file on disk. None if stat not run or supplied. """
-		try:
-			return int(self.stat.st_gid)
-		except TypeError:
-			return
+		if not self.stat.st_gid:
+			try:
+				self.stat.st_gid = os.stat(self.abspath).st_gid
+				return self.stat.st_gid
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_gid
 
 	@property
 	def ctime(self):
 		""" Stat ctime of file on disk. None if stat not run or supplied. """
-		try:
-			return float(self.stat.st_ctime)
-		except TypeError:
-			return
+		if not self.stat.st_ctime:
+			try:
+				self.stat.st_ctime = os.stat(self.abspath).st_ctime
+				return self.stat.st_ctime
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_ctime
 
 	@property
 	def mtime(self):
 		""" Stat mtime of file on disk. None if stat not run or supplied. """
-		try:
-			return float(self.stat.st_mtime)
-		except TypeError:
-			return
+		if not self.stat.st_mtime:
+			try:
+				self.stat.st_mtime = os.stat(self.abspath).st_mtime
+				return self.stat.st_mtime
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_mtime
 
 	@property
 	def atime(self):
 		""" Stat atime of file on disk. None if stat not run or supplied. """
-		try:
-			return float(self.stat.st_atime)
-		except TypeError:
-			return
+		if not self.stat.st_atime:
+			try:
+				self.stat.st_atime = os.stat(self.abspath).st_atime
+				return self.stat.st_atime
+			except FileNotFoundError:
+				return
+		else:
+			return self.stat.st_atime
 
 	def get_seq_key(self, ignore_padding=True):
 		"""
