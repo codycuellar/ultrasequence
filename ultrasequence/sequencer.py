@@ -1,6 +1,13 @@
 import os
 import re
+import sys
+from os import walk
 
+if sys.version_info[0] == 2:
+	try:
+		from scandir import walk
+	except ImportError:
+		pass
 
 FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
 DEFAULT_FORMAT = '%H%r%T'
@@ -520,6 +527,13 @@ class Sequence(object):
 		return self.ext
 
 
+def get_files_in_directory(path):
+	file_list = []
+	for root, dirs, files in walk(path):
+		file_list += [os.path.join(root, file) for file in files]
+	return file_list
+
+
 def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 				   ignore_padding=True):
 	"""
@@ -530,7 +544,9 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 	:param filelist: list of filenames to process. These can have different
 	:param include_exts: an iterable of string extensions to include in the
 		sequencing process
-	:param force_consistent_padding: force sequences with different padding to
+	:param stat: dict, tuple or list of file stats
+	:param bool get_stats: if True, each file will attempt to run os.stat()
+	:param ignore_padding: force sequences with different padding to
 		to be separate sequences.
 	:return: *sequences, *non_sequences, *excluded, *collisions
 	"""
@@ -547,27 +563,34 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 	excluded = []
 	collisions = []
 
-	for _file in filelist:
-		if isinstance(_file, str):
-			_file = File(_file, stats=stats, get_stats=get_stats)
-		elif isinstance(_file, (tuple, list)) and len(_file) == 2:
-			_file = File(_file[0], stats=_file[1], get_stats=get_stats)
-		if include_exts and _file.ext.lower() not in include_exts:
-			excluded.append(_file)
-		elif _file.frame is None:
-			non_sequences.append(_file)
-		else:
-			seq_name = _file.get_seq_key(ignore_padding)
-			if seq_name not in sequences:
-				sequences[seq_name] = Sequence(_file, ignore_padding)
+	if isinstance(filelist, str) and os.path.isdir(filelist):
+		filelist = get_files_in_directory(filelist)
+
+	elif isinstance(filelist, (list, tuple)):
+		for _file in filelist:
+			if isinstance(_file, str):
+				_file = File(_file, stats=stats, get_stats=get_stats)
+			elif isinstance(_file, (tuple, list)) and len(_file) == 2:
+				_file = File(_file[0], stats=_file[1], get_stats=get_stats)
+			if include_exts and _file.ext.lower() not in include_exts:
+				excluded.append(_file)
+			elif _file.frame is None:
+				non_sequences.append(_file)
 			else:
-				try:
-					sequences[seq_name].append(_file)
-				except IndexError:
-					collisions.append(_file)
-
+				seq_name = _file.get_seq_key(ignore_padding)
+				if seq_name not in sequences:
+					sequences[seq_name] = Sequence(_file, ignore_padding)
+				else:
+					try:
+						sequences[seq_name].append(_file)
+					except IndexError:
+						collisions.append(_file)
+	else:
+		# TODO: implement logging here
+		return
 	sequences = [sequences[seq] for seq in sequences]
-	non_sequences += [sequences.pop(i)[seq.start] for i, seq in
-					  reversed(list(enumerate(sequences))) if seq.frames == 1]
+	non_sequences += [
+		sequences.pop(i)[seq.start] for i, seq in
+		reversed(list(enumerate(sequences))) if seq.frames == 1]
 
-	return sequences, non_sequences, excluded, collisions
+	return [sequences, non_sequences, excluded, collisions]
