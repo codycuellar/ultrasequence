@@ -537,7 +537,7 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 	if not include_exts:
 		include_exts = set()
 	else:
-		set(include_exts)
+		set([ext.lower() for ext in include_exts])
 
 	if not stats:
 		stats = {}
@@ -547,12 +547,12 @@ def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
 	excluded = []
 	collisions = []
 
-	for file in filelist:
-		if isinstance(file, str):
-			_file = File(file, stats=stats, get_stats=get_stats)
-		elif isinstance(file, (tuple, list)) and len(file) == 2:
-			_file = File(file[0], stats=file[1], get_stats=get_stats)
-		if include_exts and _file.ext not in include_exts:
+	for _file in filelist:
+		if isinstance(_file, str):
+			_file = File(_file, stats=stats, get_stats=get_stats)
+		elif isinstance(_file, (tuple, list)) and len(_file) == 2:
+			_file = File(_file[0], stats=_file[1], get_stats=get_stats)
+		if include_exts and _file.ext.lower() not in include_exts:
 			excluded.append(_file)
 		elif _file.frame is None:
 			non_sequences.append(_file)

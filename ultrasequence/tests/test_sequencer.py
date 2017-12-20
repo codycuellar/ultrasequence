@@ -309,6 +309,13 @@ class TestMakeSequences(TestCase):
 		for l in results:
 			self.assertIsInstance(l, list)
 
+	def test_make_sequences_takes_file_instances(self):
+		file1 = sq.File('/path/to/file.100.ext')
+		file2 = sq.File('/path/to/file.101.ext')
+		file3 = sq.File('/path/to/file.102.ext')
+		results = sq.make_sequences([file1, file2, file3])
+		self.assertEqual(results[0][0].seq_name, '/path/to/file.#.ext')
+
 	def test_make_sequence_include_exts_works(self):
 		ignore_files = [
 			'file.10001.mov',
@@ -340,7 +347,7 @@ class TestMakeSequences(TestCase):
 			'trailing.#.chars.ext',
 			'#.ext',
 			'no#sep.ext',
-			'multiple_nums.#.ext',
+			'multiple_nums.#.EXT',
 			'2017_#.ext',
 			'ab_010_0010_comp_v023.#.dpx',
 			'/abs/path/2/basic_dot.#.ext',
@@ -367,7 +374,7 @@ class TestMakeSequences(TestCase):
 			'trailing.%04d.chars.ext',
 			'%04d.ext',
 			'no%02dsep.ext',
-			'multiple_nums.%03d.ext',
+			'multiple_nums.%03d.EXT',
 			'2017_%03d.ext',
 			'ab_010_0010_comp_v023.%04d.dpx',
 			'/abs/path/2/basic_dot.%01d.ext',
