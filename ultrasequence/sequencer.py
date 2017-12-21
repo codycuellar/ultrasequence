@@ -174,6 +174,50 @@ class File(object):
 	def __repr__(self):
 		return "File('%s')" % self.abspath
 
+	def __lt__(self, other):
+		if isinstance(other, File) \
+				and self.get_seq_key() == other.get_seq_key():
+			return self.frame_as_str < other.frame_as_str
+		else:
+			raise TypeError('%s not File instance.' % str(other))
+
+	def __gt__(self, other):
+		if isinstance(other, File) \
+				and self.get_seq_key() == other.get_seq_key():
+			return self.frame_as_str > other.frame_as_str
+		else:
+			raise TypeError('%s not File instance.' % str(other))
+
+	def __le__(self, other):
+		if isinstance(other, File) \
+				and self.get_seq_key() == other.get_seq_key():
+			return self.frame_as_str <= other.frame_as_str
+		else:
+			raise TypeError('%s not File instance.' % str(other))
+
+	def __ge__(self, other):
+		if isinstance(other, File) \
+				and self.get_seq_key() == other.get_seq_key():
+			return self.frame_as_str >= other.frame_as_str
+		else:
+			raise TypeError('%s not File instance.' % str(other))
+
+	def __eq__(self, other):
+		if isinstance(other, File):
+			return self.abspath == other.abspath
+		elif isinstance(other, str):
+			return self.abspath == other
+		else:
+			return False
+
+	def __ne__(self, other):
+		if isinstance(other, File):
+			return self.abspath != other.abspath
+		elif isinstance(other, str):
+			return self.abspath != other
+		else:
+			return True
+
 	@property
 	def frame(self):
 		""" Integer frame number """
