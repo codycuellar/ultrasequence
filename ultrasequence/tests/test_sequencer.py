@@ -46,19 +46,41 @@ class TestSplitExtension(TestCase):
 		self.assertTupleEqual(split, ('testext1', ''))
 
 
+class TestFrameRangesToString(TestCase):
+
+	def test_conver_list(self):
+		frames = [100, 101, 102, 104, 107, 108, 1010]
+		result = sq.frame_ranges_to_string(frames)
+		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
+
+	def test_convert_tuple(self):
+		frames = (100, 101, 102, 104, 107, 108, 1010)
+		result = sq.frame_ranges_to_string(frames)
+		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
+
+	def test_convert_empty_list(self):
+		result = sq.frame_ranges_to_string([])
+		self.assertEqual(result, '[]')
+
+	def test_convert_single_item(self):
+		result = sq.frame_ranges_to_string([5])
+		self.assertEqual(result, '[5]')
+
+
 class TestFile(TestCase):
 
 	def test_normal_file_init(self):
-		file = sq.File('/path/to/file.1000.more.ext')
-		self.assertEqual(file.abspath, '/path/to/file.1000.more.ext')
+		file = sq.File('/path/to/file.01000.more.ext')
+		self.assertEqual(file.abspath, '/path/to/file.01000.more.ext')
 		self.assertEqual(file.path, '/path/to')
-		self.assertEqual(file.name, 'file.1000.more.ext')
+		self.assertEqual(file.name, 'file.01000.more.ext')
 		self.assertEqual(file.ext, 'ext')
+		self.assertEqual(file.namehead, 'file.')
 		self.assertEqual(file.head, '/path/to/file.')
-		self.assertEqual(file._framenum, '1000')
+		self.assertEqual(file.frame_as_str, '01000')
 		self.assertEqual(file.frame, 1000)
 		self.assertEqual(file.tail, '.more.ext')
-		self.assertEqual(file.padding, 4)
+		self.assertEqual(file.padding, 5)
 
 	def test_no_number_file_init(self):
 		file = sq.File('/path/to/file.ext')
@@ -66,23 +88,24 @@ class TestFile(TestCase):
 		self.assertEqual(file.path, '/path/to')
 		self.assertEqual(file.name, 'file.ext')
 		self.assertEqual(file.ext, 'ext')
+		self.assertEqual(file.namehead, 'file')
 		self.assertEqual(file.head, '/path/to/file')
-		self.assertEqual(file._framenum, '')
+		self.assertEqual(file.frame_as_str, '')
 		self.assertEqual(file.frame, None)
 		self.assertEqual(file.tail, '.ext')
 		self.assertEqual(file.padding, 0)
 
 	def test_number_only_file_init(self):
-		file = sq.File('/path/to/1234.ext')
-		self.assertEqual(file.abspath, '/path/to/1234.ext')
+		file = sq.File('/path/to/01234.ext')
+		self.assertEqual(file.abspath, '/path/to/01234.ext')
 		self.assertEqual(file.path, '/path/to')
-		self.assertEqual(file.name, '1234.ext')
+		self.assertEqual(file.name, '01234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '/path/to/')
-		self.assertEqual(file._framenum, '1234')
+		self.assertEqual(file._framenum, '01234')
 		self.assertEqual(file.frame, 1234)
 		self.assertEqual(file.tail, '.ext')
-		self.assertEqual(file.padding, 4)
+		self.assertEqual(file.padding, 5)
 
 	def test_number_only_no_path_file_init(self):
 		file = sq.File('1234.ext')
@@ -91,7 +114,7 @@ class TestFile(TestCase):
 		self.assertEqual(file.name, '1234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '')
-		self.assertEqual(file._framenum, '1234')
+		self.assertEqual(file.frame_as_str, '1234')
 		self.assertEqual(file.frame, 1234)
 		self.assertEqual(file.tail, '.ext')
 		self.assertEqual(file.padding, 4)
@@ -163,6 +186,19 @@ class TestFile(TestCase):
 		self.assertIsInstance(file.stat, sq.Stat)
 		self.assertEqual(file.size, 15)
 		self.assertIsNone(file.inode)
+
+	def test_file_get_seq_key_ignore_padding(self):
+		file = sq.File('/path/to/file.01000.more.ext')
+		self.assertEqual(file.get_seq_key(), '/path/to/file.#.more.ext')
+
+	def test_file_get_seq_key_with_padding(self):
+		file = sq.File('/path/to/file.01000.more.ext')
+		self.assertEqual(file.get_seq_key(ignore_padding=False),
+						 '/path/to/file.%05d.more.ext')
+
+	def test_file_get_seq_key_no_frame_num(self):
+		file = sq.File('/path/to/file_name.test.ext')
+		self.assertEqual(file.get_seq_key(), '/path/to/file_name.test.ext')
 
 
 class TestSequence(TestCase):
@@ -274,28 +310,6 @@ class TestSequence(TestCase):
 		for file in files:
 			seq.append(file)
 		self.assertListEqual(seq.get_missing_frames(), [102, 104])
-
-
-
-class TestFrameRangesToString(TestCase):
-
-	def test_conver_list(self):
-		frames = [100, 101, 102, 104, 107, 108, 1010]
-		result = sq.frame_ranges_to_string(frames)
-		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
-
-	def test_convert_tuple(self):
-		frames = (100, 101, 102, 104, 107, 108, 1010)
-		result = sq.frame_ranges_to_string(frames)
-		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
-
-	def test_convert_empty_list(self):
-		result = sq.frame_ranges_to_string([])
-		self.assertEqual(result, '[]')
-
-	def test_convert_single_item(self):
-		result = sq.frame_ranges_to_string([5])
-		self.assertEqual(result, '[5]')
 
 
 class TestSequenceFormatting(TestCase):
