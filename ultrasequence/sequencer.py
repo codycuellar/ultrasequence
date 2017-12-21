@@ -9,6 +9,7 @@ if sys.version_info[0] == 2:
 	except ImportError:
 		pass
 
+
 FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
 DEFAULT_FORMAT = '%H%r%T'
 
@@ -450,7 +451,9 @@ class Sequence(object):
 	def formatter(self, format=DEFAULT_FORMAT):
 		"""
 		This formatter will replace any of the formatting directives
-		found in the format argument with it's string part.
+		found in the format argument with it's string part. It will try
+		to format any character after a % sign, so in order to use a
+		literal %, it must be escaped with another % - '%%'.
 		
 		 --------------------------------------------------------------------
 		|  SAMPLE NAME:   '/path/to/file_name.0101.final.ext'
@@ -458,7 +461,9 @@ class Sequence(object):
 		
 		  FMT     DESCRIPTION                      EXAMPLE
 		 --------------------------------------------------------------------
-		| '%p' |  pathaname                      |  '/path/to/'
+		| '%%' |  literal '%' sign               |  '%'
+		|--------------------------------------------------------------------
+		| '%p' |  pathname                       |  '/path/to'
 		|--------------------------------------------------------------------
 		| '%h' |  head chars of filename         |  'file_name.'
 		|--------------------------------------------------------------------
@@ -493,24 +498,40 @@ class Sequence(object):
 
 		# Call functions to minimize processes run during formatter execution.
 		directive_mapper = {
+			'%%': self.__pct,
 			'%p': self.__path,
 			'%h': self.__namehead,
 			'%H': self.__head,
 			'%f': self.__num_frames,
-			'%r': self.__short_range,
+			'%r': self.__implied_range,
 			'%R': self.__explicit_range,
 			'%m': self.__num_missing_frames,
 			'%M': self.__explicit_missing_range,
-			'%d': self.__pound_padding,
-			'%D': self.__formatted_padding,
+			'%d': self.__digits_pound_signs,
+			'%D': self.__digits_padding,
 			'%t': self.__tail_without_ext,
 			'%T': self.__tail,
 			'%e': self.__ext,
 		}
-		for x in directive_mapper:
-			if x in format:
-				format = format.replace(x, directive_mapper[x]())
-		return format
+		format = [c for c in format]
+		new_string = ''
+
+		matched = False
+		for char in format:
+			if matched:
+				new_string += directive_mapper['%' + char]()
+				matched = False
+				continue
+			if char == '%':
+				matched = True
+				continue
+			else:
+				new_string += char
+		return new_string
+
+	def __pct(self):
+		""" Internal formatter method """
+		return '%'
 
 	def __path(self):
 		""" Internal formatter method """
@@ -528,7 +549,7 @@ class Sequence(object):
 		""" Internal formatter method """
 		return str(self.frames)
 
-	def __short_range(self):
+	def __implied_range(self):
 		""" Internal formatter method """
 		return '[' + str(self[self.start].frame_as_str) + \
 			   '-' + str(self[self.end].frame_as_str) + ']'
@@ -545,17 +566,17 @@ class Sequence(object):
 		""" Internal formatter method """
 		return frame_ranges_to_string(self.get_missing_frames())
 
-	def __pound_padding(self):
+	def __digits_pound_signs(self):
 		""" Internal formatter method """
 		return '#' * self.padding
 
-	def __formatted_padding(self):
+	def __digits_padding(self):
 		""" Internal formatter method """
 		return '%%0%dd' % self.padding
 
 	def __tail_without_ext(self):
 		""" Internal formatter method """
-		return '.'.join('.'.split(self.tail)[:-1])
+		return '.'.join(self.tail.split('.')[:-1])
 
 	def __tail(self):
 		""" Internal formatter method """
