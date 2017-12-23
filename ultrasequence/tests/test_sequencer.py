@@ -396,8 +396,12 @@ class TestSequenceFormatting(TestCase):
 
 	def test_formatter_pct(self):
 		self.assertEqual(self.seq.formatter('%%'), '%')
-		self.assertEqual(self.seq.formatter('100%% success'),
+		self.assertEqual(self.seq.formatter('100%% Success'),
 						 '100% Success')
+
+	def test_formatter_invalid_directive(self):
+		with self.assertRaises(KeyError):
+			self.seq.formatter('Try%^Fail')
 
 
 class TestMakeSequences(TestCase):
