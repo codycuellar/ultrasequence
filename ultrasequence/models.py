@@ -358,7 +358,7 @@ class File(object):
 		else:
 			return self.stat.st_atime
 
-	def get_seq_key(self, ignore_padding):
+	def get_seq_key(self, ignore_padding=None):
 		"""
 		Make sequence name identifier
 
@@ -366,6 +366,8 @@ class File(object):
 		:return: sequence name with '#' for frame number if padding ignored
 			or standerd padding format '%0#d' where '#' is padding amount. 
 		"""
+		if ignore_padding is None:
+			ignore_padding = cfg.ignore_padding
 		if not self._framenum:
 			digits = ''
 		elif ignore_padding is True:
