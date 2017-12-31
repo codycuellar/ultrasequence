@@ -358,7 +358,7 @@ class File(object):
 		else:
 			return self.stat.st_atime
 
-	def get_seq_key(self, ignore_padding=cfg.ignore_padding):
+	def get_seq_key(self, ignore_padding):
 		"""
 		Make sequence name identifier
 
@@ -368,10 +368,12 @@ class File(object):
 		"""
 		if not self._framenum:
 			digits = ''
-		elif ignore_padding:
+		elif ignore_padding is True:
 			digits = '#'
-		else:
+		elif ignore_padding is False:
 			digits = '%%0%dd' % self.padding
+		else:
+			raise TypeError('ignore_padding argument must be of type bool.')
 		return self.head + digits + self.tail
 
 
@@ -481,8 +483,8 @@ class Sequence(object):
 		if not isinstance(file, File):
 			if isinstance(file, str):
 				file = File(file)
-				if len(self._frames) > 0 and file.get_seq_key() != \
-						self.seq_name:
+				if len(self._frames) > 0 and file.get_seq_key(
+						cfg.ignore_padding) != self.seq_name:
 					raise ValueError('%s is not a member of %s. Not appending.'
 									 % (file, repr(self)))
 		if file.frame is None:
@@ -494,7 +496,7 @@ class Sequence(object):
 			self.tail = file.tail
 			self.ext = file.ext
 			self.padding = file.padding
-			self.seq_name = file.get_seq_key()
+			self.seq_name = file.get_seq_key(cfg.ignore_padding)
 		elif file.frame in self._frames:
 			raise IndexError('%s already in sequence as %s' %
 							 (file.name, self._frames[file.frame]))
