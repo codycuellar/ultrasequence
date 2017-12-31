@@ -32,8 +32,8 @@ def get_files_in_directory(path, recurse=True):
 
 
 class Parser(object):
-	def __init__(self, include_exts=None, get_stats=cfg.get_stats,
-				 ignore_padding=cfg.ignore_padding):
+	def __init__(self, include_exts=None, exclude_exts=None,
+				 get_stats=cfg.get_stats, ignore_padding=cfg.ignore_padding):
 		cfg.get_stats = get_stats
 		cfg.ignore_padding = ignore_padding
 		if not include_exts:
