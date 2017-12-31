@@ -476,21 +476,22 @@ class Sequence(object):
 		except TypeError:
 			return
 
+	def get_frame(self, frame):
+		return self._frames[frame]
+
 	def get_frames(self, start=None, end=None, step=1):
 		""" Get a list of all frame numbers actually existing in sequence """
+		frame_list = []
 		if start is None:
 			return self[:]
-		elif end is None:
-			return self._frames[start]
-		else:
-			frame_list = []
+		elif end is not None:
 			for frame in range(start, end, step):
 				if frame in self._frames:
 					frame_list.append(self._frames[frame])
 				else:
 					logger.warning('Cannot get frame %d not in sequence %s.' %
 								   (frame, str(self)))
-			return frame_list
+		return frame_list
 
 	def get_missing_frames(self):
 		""" Get list of frame numbers missing between start and end frame """
@@ -631,8 +632,8 @@ class Sequence(object):
 
 	def __implied_range(self):
 		""" Internal formatter method """
-		return '[' + str(self[self.start].frame_as_str) + \
-			   '-' + str(self[self.end].frame_as_str) + ']'
+		return '[' + str(self.get_frame(self.start).frame_as_str) + \
+			   '-' + str(self.get_frame(self.end).frame_as_str) + ']'
 
 	def __explicit_range(self):
 		""" Internal formatter method """
