@@ -529,7 +529,7 @@ class Sequence(object):
 			self.padding = file.padding
 		self._frames[file.frame] = file
 
-	def formatter(self, format=DEFAULT_FORMAT):
+	def format(self, format=DEFAULT_FORMAT):
 		"""
 		This formatter will replace any of the formatting directives
 		found in the format argument with it's string part. It will try
