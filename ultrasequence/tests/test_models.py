@@ -72,7 +72,7 @@ class TestFile(TestCase):
 	def test_normal_file_init(self):
 		file = models.File('/path/to/file.01000.more.ext')
 		self.assertEqual(file.abspath, '/path/to/file.01000.more.ext')
-		self.assertEqual(file.dir, '/path/to')
+		self.assertEqual(file.path, '/path/to')
 		self.assertEqual(file.name, 'file.01000.more.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.namehead, 'file.')
@@ -85,7 +85,7 @@ class TestFile(TestCase):
 	def test_no_number_file_init(self):
 		file = models.File('/path/to/file.ext')
 		self.assertEqual(file.abspath, '/path/to/file.ext')
-		self.assertEqual(file.dir, '/path/to')
+		self.assertEqual(file.path, '/path/to')
 		self.assertEqual(file.name, 'file.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.namehead, 'file')
@@ -98,7 +98,7 @@ class TestFile(TestCase):
 	def test_number_only_file_init(self):
 		file = models.File('/path/to/01234.ext')
 		self.assertEqual(file.abspath, '/path/to/01234.ext')
-		self.assertEqual(file.dir, '/path/to')
+		self.assertEqual(file.path, '/path/to')
 		self.assertEqual(file.name, '01234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '/path/to/')
@@ -110,7 +110,7 @@ class TestFile(TestCase):
 	def test_number_only_no_path_file_init(self):
 		file = models.File('1234.ext')
 		self.assertEqual(file.abspath, '1234.ext')
-		self.assertEqual(file.dir, '')
+		self.assertEqual(file.path, '')
 		self.assertEqual(file.name, '1234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '')
@@ -221,7 +221,7 @@ class TestSequence(TestCase):
 		self.assertEqual(seq.seq_name, '/path/to/file.#.ext')
 		self.assertEqual(seq.namehead, 'file.')
 		self.assertEqual(seq.head, '/path/to/file.')
-		self.assertEqual(seq.dir, '/path/to')
+		self.assertEqual(seq.path, '/path/to')
 		self.assertEqual(seq.tail, '.ext')
 		self.assertEqual(seq.ext, 'ext')
 		self.assertEqual(seq.padding, 4)
@@ -360,13 +360,13 @@ class TestSequenceFormatting(TestCase):
 						 'test[103, 105-106, 109]test[103, 105-106, 109]')
 
 	def test_format_pound_padding(self):
-		self.assertEqual(self.seq.format('%d'), '####')
-		self.assertEqual(self.seq.format('test%dtest%d'),
+		self.assertEqual(self.seq.format('%D'), '####')
+		self.assertEqual(self.seq.format('test%Dtest%D'),
 						 'test####test####')
 
 	def test_format_formatted_padding(self):
-		self.assertEqual(self.seq.format('%D'), '%04d')
-		self.assertEqual(self.seq.format('test%Dtest%D'),
+		self.assertEqual(self.seq.format('%P'), '%04d')
+		self.assertEqual(self.seq.format('test%Ptest%P'),
 						 'test%04dtest%04d')
 
 	def test_format_tail_without_ext(self):
