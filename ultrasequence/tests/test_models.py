@@ -317,81 +317,81 @@ class TestSequenceFormatting(TestCase):
 		for f in files:
 			self.seq.append(f)
 
-	def test_formatter_path(self):
-		self.assertEqual(self.seq.formatter('%p'), '/abs/path/to')
-		self.assertEqual(self.seq.formatter('test%ptest%p'),
+	def test_format_path(self):
+		self.assertEqual(self.seq.format('%p'), '/abs/path/to')
+		self.assertEqual(self.seq.format('test%ptest%p'),
 						 'test/abs/path/totest/abs/path/to')
 
-	def test_formatter_namehead(self):
-		self.assertEqual(self.seq.formatter('%h'), 'file_')
-		self.assertEqual(self.seq.formatter('test%htest%h'),
+	def test_format_namehead(self):
+		self.assertEqual(self.seq.format('%h'), 'file_')
+		self.assertEqual(self.seq.format('test%htest%h'),
 						 'testfile_testfile_')
 
-	def test_formatter_head(self):
-		self.assertEqual(self.seq.formatter('%H'), '/abs/path/to/file_')
-		self.assertEqual(self.seq.formatter('test%Htest%H'),
+	def test_format_head(self):
+		self.assertEqual(self.seq.format('%H'), '/abs/path/to/file_')
+		self.assertEqual(self.seq.format('test%Htest%H'),
 						 'test/abs/path/to/file_test/abs/path/to/file_')
 
-	def test_formatter_numframes(self):
-		self.assertEqual(self.seq.formatter('%f'), '7')
-		self.assertEqual(self.seq.formatter('test%ftest(%f)'),
+	def test_format_numframes(self):
+		self.assertEqual(self.seq.format('%f'), '7')
+		self.assertEqual(self.seq.format('test%ftest(%f)'),
 						 'test7test(7)')
 
-	def test_formatter_implied_range(self):
-		self.assertEqual(self.seq.formatter('%r'), '[0100-0110]')
-		self.assertEqual(self.seq.formatter('test%rtest%r'),
+	def test_format_implied_range(self):
+		self.assertEqual(self.seq.format('%r'), '[0100-0110]')
+		self.assertEqual(self.seq.format('test%rtest%r'),
 						 'test[0100-0110]test[0100-0110]')
 
-	def test_formatter_explicit_range(self):
-		self.assertEqual(self.seq.formatter('%R'),
+	def test_format_explicit_range(self):
+		self.assertEqual(self.seq.format('%R'),
 						 '[100-102, 104, 107-108, 110]')
 		self.assertEqual(
-			self.seq.formatter('test%Rtest%R'),
+			self.seq.format('test%Rtest%R'),
 			'test[100-102, 104, 107-108, 110]test[100-102, 104, 107-108, 110]')
 
-	def test_formatter_num_missing_frames(self):
-		self.assertEqual(self.seq.formatter('%m'), '4')
-		self.assertEqual(self.seq.formatter('test%mtest%m'),
+	def test_format_num_missing_frames(self):
+		self.assertEqual(self.seq.format('%m'), '4')
+		self.assertEqual(self.seq.format('test%mtest%m'),
 						 'test4test4')
 
-	def test_formatter_explicit_missing_frames(self):
-		self.assertEqual(self.seq.formatter('%M'), '[103, 105-106, 109]')
-		self.assertEqual(self.seq.formatter('test%Mtest%M'),
+	def test_format_explicit_missing_frames(self):
+		self.assertEqual(self.seq.format('%M'), '[103, 105-106, 109]')
+		self.assertEqual(self.seq.format('test%Mtest%M'),
 						 'test[103, 105-106, 109]test[103, 105-106, 109]')
 
-	def test_formatter_pound_padding(self):
-		self.assertEqual(self.seq.formatter('%d'), '####')
-		self.assertEqual(self.seq.formatter('test%dtest%d'),
+	def test_format_pound_padding(self):
+		self.assertEqual(self.seq.format('%d'), '####')
+		self.assertEqual(self.seq.format('test%dtest%d'),
 						 'test####test####')
 
-	def test_formatter_formatted_padding(self):
-		self.assertEqual(self.seq.formatter('%D'), '%04d')
-		self.assertEqual(self.seq.formatter('test%Dtest%D'),
+	def test_format_formatted_padding(self):
+		self.assertEqual(self.seq.format('%D'), '%04d')
+		self.assertEqual(self.seq.format('test%Dtest%D'),
 						 'test%04dtest%04d')
 
-	def test_formatter_tail_without_ext(self):
-		self.assertEqual(self.seq.formatter('%t'), '_name')
-		self.assertEqual(self.seq.formatter('test%ttest%t'),
+	def test_format_tail_without_ext(self):
+		self.assertEqual(self.seq.format('%t'), '_name')
+		self.assertEqual(self.seq.format('test%ttest%t'),
 						 'test_nametest_name')
 
-	def test_formatter_tail(self):
-		self.assertEqual(self.seq.formatter('%T'), '_name.ext')
-		self.assertEqual(self.seq.formatter('test%Ttest%T'),
+	def test_format_tail(self):
+		self.assertEqual(self.seq.format('%T'), '_name.ext')
+		self.assertEqual(self.seq.format('test%Ttest%T'),
 						 'test_name.exttest_name.ext')
 
-	def test_formatter_ext(self):
-		self.assertEqual(self.seq.formatter('%e'), 'ext')
-		self.assertEqual(self.seq.formatter('test%etest%e'),
+	def test_format_ext(self):
+		self.assertEqual(self.seq.format('%e'), 'ext')
+		self.assertEqual(self.seq.format('test%etest%e'),
 						 'testexttestext')
 
-	def test_formatter_pct(self):
-		self.assertEqual(self.seq.formatter('%%'), '%')
-		self.assertEqual(self.seq.formatter('100%% Success'),
+	def test_format_pct(self):
+		self.assertEqual(self.seq.format('%%'), '%')
+		self.assertEqual(self.seq.format('100%% Success'),
 						 '100% Success')
 
-	def test_formatter_invalid_directive(self):
+	def test_format_invalid_directive(self):
 		with self.assertRaises(KeyError):
-			self.seq.formatter('Try%^Fail')
+			self.seq.format('Try%^Fail')
 
 
 # class TestMakeSequences(TestCase):
