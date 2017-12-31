@@ -635,10 +635,27 @@ class Sequence(object):
 		return self.ext
 
 
-def get_files_in_directory(path):
+def get_files_in_directory(path, get_stats=False, recurse=True):
+	def add_files(root, files):
+		dir_list = []
+		if get_stats:
+			for file in files:
+				abspath = os.path.join(root, file)
+				if os.path.islink(abspath):
+					continue
+				dir_list.append((abspath, os.stat(abspath)))
+		else:
+			dir_list += [os.path.join(root, file) for file in files]
+		return dir_list
+
 	file_list = []
-	for root, dirs, files in walk(path):
-		file_list += [os.path.join(root, file) for file in files]
+
+	if recurse:
+		for root, dirs, files in walk(path):
+			file_list += add_files(root, files)
+	else:
+		file_list += add_files(path, os.listdir)
+
 	return file_list
 
 
