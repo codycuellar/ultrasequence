@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import logging
+from ultrasequence import config as cfg
 
 
 logger = logging.getLogger(__name__)
@@ -122,7 +123,7 @@ class Stat(object):
 
 
 class File(object):
-	def __init__(self, filepath, stats=None, get_stats=False):
+	def __init__(self, filepath, stats=None, get_stats=cfg.get_stats):
 		"""
 		Class which represents single files or frames on disk.
 		While initializing this object, it can be fed stat values
@@ -142,6 +143,7 @@ class File(object):
 			If file does not exists, revert back to applying stats values
 			if they were supplied.
 		"""
+		cfg.get_stats = get_stats
 		self.abspath = filepath
 		self.dir, self.name = os.path.split(filepath)
 		self._base, self.ext = split_extension(self.name)
@@ -356,7 +358,7 @@ class File(object):
 		else:
 			return self.stat.st_atime
 
-	def get_seq_key(self, ignore_padding=True):
+	def get_seq_key(self, ignore_padding=cfg.ignore_padding):
 		"""
 		Make sequence name identifier
 
@@ -374,7 +376,7 @@ class File(object):
 
 
 class Sequence(object):
-	def __init__(self, file=None, ignore_padding=True):
+	def __init__(self, file=None, ignore_padding=cfg.ignore_padding):
 		"""
 		Class representing a sequence of matching file names. The frames
 		are stored in a dictionary with the frame numbers as keys. Sets
@@ -385,6 +387,7 @@ class Sequence(object):
 		:param bool ignore_padding: Setting to False will disallow
 			new frames from being appended if the frame padding differs.
 		"""
+		cfg.ignore_padding = ignore_padding
 		self._frames = {}
 		self.seq_name = ''
 		self.dir = ''
@@ -394,7 +397,6 @@ class Sequence(object):
 		self.ext = ''
 		self.padding = 0
 		self.inconsistent_padding = False
-		self.ignore_padding = ignore_padding
 		if file is not None:
 			self.append(file)
 
@@ -479,8 +481,8 @@ class Sequence(object):
 		if not isinstance(file, File):
 			if isinstance(file, str):
 				file = File(file)
-				if len(self._frames) > 0 and file.get_seq_key(
-						self.ignore_padding) != self.seq_name:
+				if len(self._frames) > 0 and file.get_seq_key() != \
+						self.seq_name:
 					raise ValueError('%s is not a member of %s. Not appending.'
 									 % (file, repr(self)))
 		if file.frame is None:
@@ -492,7 +494,7 @@ class Sequence(object):
 			self.tail = file.tail
 			self.ext = file.ext
 			self.padding = file.padding
-			self.seq_name = file.get_seq_key(self.ignore_padding)
+			self.seq_name = file.get_seq_key()
 		elif file.frame in self._frames:
 			raise IndexError('%s already in sequence as %s' %
 							 (file.name, self._frames[file.frame]))

@@ -32,10 +32,10 @@ def get_files_in_directory(path, recurse=True):
 
 
 class Parser(object):
-	def __init__(self, include_exts=None, get_stats=False,
-				 ignore_padding=True):
+	def __init__(self, include_exts=None, get_stats=cfg.get_stats,
+				 ignore_padding=cfg.ignore_padding):
 		cfg.get_stats = get_stats
-		self.ignore_padding = ignore_padding
+		cfg.ignore_padding = ignore_padding
 		if not include_exts:
 			self.include_exts = set()
 		else:
@@ -81,14 +81,14 @@ class Parser(object):
 			self.non_sequences.append(file_)
 
 		else:
-			seq_name = file_.get_seq_key(self.ignore_padding)
+			seq_name = file_.get_seq_key()
 			if seq_name in self._sequences:
 				try:
 					self._sequences[seq_name].append(file_)
 				except IndexError:
 					self.collisions.append(file_)
 			else:
-				self._sequences[seq_name] = Sequence(file_, self.ignore_padding)
+				self._sequences[seq_name] = Sequence(file_)
 
 	def parse_directory(self, directory, recurse=True):
 		"""
