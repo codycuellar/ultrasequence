@@ -1,40 +1,40 @@
 import os
 from os import walk
 from ultrasequence import File, Sequence
+from ultrasequence import config as cfg
 import logging
 
 
 logger = logging.getLogger()
 
 
-def get_files_in_directory(path, get_stats=False, recurse=True):
-	def add_files(root, files):
-		dir_list = []
-		if get_stats:
-			for file in files:
-				abspath = os.path.join(root, file)
-				if os.path.islink(abspath):
-					continue
-				dir_list.append((abspath, os.stat(abspath)))
-		else:
-			dir_list += [os.path.join(root, file) for file in files]
-		return dir_list
+def add_files(root, files):
+	dir_list = []
+	if cfg.get_stats:
+		for file in files:
+			abspath = os.path.join(root, file)
+			if os.path.islink(abspath):
+				continue
+			dir_list.append((abspath, os.stat(abspath)))
+	else:
+		dir_list += [os.path.join(root, file) for file in files]
+	return dir_list
 
+
+def get_files_in_directory(path, recurse=True):
 	file_list = []
-
 	if recurse:
 		for root, dirs, files in walk(path):
 			file_list += add_files(root, files)
 	else:
 		file_list += add_files(path, os.listdir)
-
 	return file_list
 
 
 class Parser(object):
 	def __init__(self, include_exts=None, get_stats=False,
 				 ignore_padding=True):
-		self.get_stats = get_stats
+		cfg.get_stats = get_stats
 		self.ignore_padding = ignore_padding
 		if not include_exts:
 			self.include_exts = set()
@@ -72,7 +72,7 @@ class Parser(object):
 		self.parsed = True
 
 	def _sort_file(self, file_, stats=None):
-		file_ = File(file_, stats=stats, get_stats=self.get_stats)
+		file_ = File(file_, stats=stats)
 
 		if self.include_exts and file_.ext.lower() not in self.include_exts:
 			self.excluded.append(file_)
@@ -101,10 +101,10 @@ class Parser(object):
 		self._reset()
 		if isinstance(directory, str) and os.path.isdir(directory):
 			file_list = get_files_in_directory(
-				directory, self.get_stats, recurse)
+				directory, recurse)
 			while file_list:  # reduce memory consumption for large lists
 				file_ = file_list.pop(0)
-				if self.get_stats:
+				if cfg.get_stats:
 					self._sort_file(file_[0], file_[1])
 				else:
 					self._sort_file(file_)
