@@ -476,9 +476,21 @@ class Sequence(object):
 		except TypeError:
 			return
 
-	def get_frames(self):
+	def get_frames(self, start=None, end=None, step=1):
 		""" Get a list of all frame numbers actually existing in sequence """
-		return sorted(list(self._frames))
+		if start is None:
+			return self[:]
+		elif end is None:
+			return self._frames[start]
+		else:
+			frame_list = []
+			for frame in range(start, end, step):
+				if frame in self._frames:
+					frame_list.append(self._frames[frame])
+				else:
+					logger.warning('Cannot get frame %d not in sequence %s.' %
+								   (frame, str(self)))
+			return frame_list
 
 	def get_missing_frames(self):
 		""" Get list of frame numbers missing between start and end frame """
