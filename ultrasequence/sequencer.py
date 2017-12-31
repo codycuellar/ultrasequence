@@ -659,63 +659,104 @@ def get_files_in_directory(path, get_stats=False, recurse=True):
 	return file_list
 
 
-def make_sequences(filelist, include_exts=None, stats=None, get_stats=False,
-				   ignore_padding=True):
-	"""
-	This function takes a list of filename path strings and attempts
-	to build sequence items out of groups of files in the same path
-	with the same naming structure.
+class Parser(object):
+	def __init__(self, include_exts=None, get_stats=False,
+				 ignore_padding=True):
+		self.get_stats = get_stats
+		self.ignore_padding = ignore_padding
+		if not include_exts:
+			self.include_exts = set()
+		else:
+			self.include_exts = set([ext.lower() for ext in include_exts])
+		self._reset()
 
-	:param filelist: list of filenames to process. These can have different
-	:param include_exts: an iterable of string extensions to include in the
-		sequencing process
-	:param stat: dict, tuple or list of file stats
-	:param bool get_stats: if True, each file will attempt to run os.stat()
-	:param ignore_padding: force sequences with different padding to
-		to be separate sequences.
-	:return: *sequences, *non_sequences, *excluded, *collisions
-	"""
-	if not include_exts:
-		include_exts = set()
-	else:
-		set([ext.lower() for ext in include_exts])
+	def _reset(self):
+		self._sequences = {}
+		self.sequences = []
+		self.single_frames = []
+		self.non_sequences = []
+		self.excluded = []
+		self.collisions = []
+		self.parsed = False
 
-	if not stats:
-		stats = {}
+	def __str__(self):
+		return ('Parser(sequenced=%d, single_frames=%d, non_sequenced=%d, '
+				'excluded=%d, collisions=%d)' %
+				(len(self.sequences), len(self.single_frames),
+				 len(self.non_sequences), len(self.excluded),
+				 len(self.collisions)))
 
-	sequences = {}
-	non_sequences = []
-	excluded = []
-	collisions = []
+	def __repr__(self):
+		return ('<Parser object at %s, parsed=%s>' %
+				(hex(id(self)), self.parsed))
 
-	if isinstance(filelist, str) and os.path.isdir(filelist):
-		filelist = get_files_in_directory(filelist)
-
-	if isinstance(filelist, (list, tuple)):
-		for _file in filelist:
-			if isinstance(_file, str):
-				_file = File(_file, stats=stats, get_stats=get_stats)
-			elif isinstance(_file, (tuple, list)) and len(_file) == 2:
-				_file = File(_file[0], stats=_file[1], get_stats=get_stats)
-			if include_exts and _file.ext.lower() not in include_exts:
-				excluded.append(_file)
-			elif _file.frame is None:
-				non_sequences.append(_file)
+	def _cleanup(self):
+		while self._sequences:
+			seq = self._sequences.popitem()[1]
+			if seq.frames == 1:
+				self.single_frames.append(seq)
 			else:
-				seq_name = _file.get_seq_key(ignore_padding)
-				if seq_name not in sequences:
-					sequences[seq_name] = Sequence(_file, ignore_padding)
-				else:
-					try:
-						sequences[seq_name].append(_file)
-					except IndexError:
-						collisions.append(_file)
-	else:
-		# TODO: implement logging here
-		return
-	sequences = [sequences[seq] for seq in sequences]
-	non_sequences += [
-		sequences.pop(i)[seq.start] for i, seq in
-		reversed(list(enumerate(sequences))) if seq.frames == 1]
+				self.sequences.append(seq)
+		self.parsed = True
 
-	return [sequences, non_sequences, excluded, collisions]
+	def _sort_file(self, file_, stats=None):
+		file_ = File(file_, stats=stats, get_stats=self.get_stats)
+
+		if self.include_exts and file_.ext.lower() not in self.include_exts:
+			self.excluded.append(file_)
+
+		elif file_.frame is None:
+			self.non_sequences.append(file_)
+
+		else:
+			seq_name = file_.get_seq_key(self.ignore_padding)
+			if seq_name in self._sequences:
+				try:
+					self._sequences[seq_name].append(file_)
+				except IndexError:
+					self.collisions.append(file_)
+			else:
+				self._sequences[seq_name] = Sequence(file_, self.ignore_padding)
+
+	def parse_directory(self, directory, recurse=True):
+		"""
+		Parse a directory on the file system.
+
+		:param str directory:
+		:param bool recurse:
+		:return:
+		"""
+		self._reset()
+		if isinstance(directory, str) and os.path.isdir(directory):
+			file_list = get_files_in_directory(
+				directory, self.get_stats, recurse)
+			while file_list:  # reduce memory consumption for large lists
+				file_ = file_list.pop(0)
+				if self.get_stats:
+					self._sort_file(file_[0], file_[1])
+				else:
+					self._sort_file(file_)
+			self._cleanup()
+		else:
+			logger.warning('%s is not an available directory.' % directory)
+
+	# def parse_file(self, filepath, csv=False, csv_sep='\t'):
+	# 	"""
+	# 	Parse a text csv or text file containing file listings.
+	#
+	# 	:param filepath:
+	# 	:return:
+	# 	"""
+	# 	if isinstance(filepath, str) and os.path.isfile(filepath):
+	# 		with open(filepath, 'r') as file_list:
+	# 			for file_ in file_list:
+	# 				self.sort_file(file_.rstrip())
+	#
+	# def parse_list(self, file_list):
+	# 	"""
+	# 	Parse a list of files.
+	#
+	# 	:param file_list:
+	# 	:return:
+	# 	"""
+	# 	pass
