@@ -418,12 +418,17 @@ class Sequence(object):
 		return iter([self._frames[frame] for frame in self._frames])
 
 	def __getitem__(self, frames):
+		all_frames = list(sorted(self._frames))
 		if isinstance(frames, slice):
-			return [self._frames[x] for x in
+			return [self._frames[all_frames[x]] for x in
 					range(frames.start, frames.stop, frames.step)]
-		elif isinstance(frames, (tuple, list)):
-			return [self._frames[x] for x in frames]
-		return self._frames[frames]
+		return self._frames[all_frames[frames]]
+
+	def __lt__(self, other):
+		if isinstance(other, str):
+			return self.seq_name < other
+		else:
+			return self.seq_name < other.seq_name
 
 	@property
 	def name(self):
