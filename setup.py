@@ -11,7 +11,7 @@ with open(os.path.join(packagedir, 'ultrasequence', 'version.py'), 'r') as v:
 setup(
 	packages=find_packages(),
 	name=NAME,
-	version=VERSION,
+	version=__version__,
 	author=AUTHOR,
 	author_email=EMAIL,
 	package_dir={'ultrasequece': 'ultrasequence'},
