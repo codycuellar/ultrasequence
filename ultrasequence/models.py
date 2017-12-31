@@ -420,8 +420,7 @@ class Sequence(object):
 	def __getitem__(self, frames):
 		all_frames = list(sorted(self._frames))
 		if isinstance(frames, slice):
-			return [self._frames[all_frames[x]] for x in
-					range(frames.start, frames.stop, frames.step)]
+			return [self._frames[f] for f in sorted(self._frames)][frames]
 		return self._frames[all_frames[frames]]
 
 	def __lt__(self, other):
@@ -480,12 +479,12 @@ class Sequence(object):
 		return self._frames[frame]
 
 	def get_frames(self, start=None, end=None, step=1):
-		""" Get a list of all frame numbers actually existing in sequence """
+		"""  """
 		frame_list = []
 		if start is None:
 			return self[:]
 		elif end is not None:
-			for frame in range(start, end, step):
+			for frame in range(start, end + 1, step):
 				if frame in self._frames:
 					frame_list.append(self._frames[frame])
 				else:
