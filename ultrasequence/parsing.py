@@ -1,6 +1,6 @@
 import os
 from os import walk
-from ultrasequence import File, Sequence
+from ultrasequence import File, Sequence, Stat
 from ultrasequence import config as cfg
 import logging
 
@@ -29,6 +29,12 @@ def get_files_in_directory(path, recurse=True):
 	else:
 		file_list += add_files(path, os.listdir)
 	return file_list
+
+
+def map_stats(stat_order, stats):
+	if not len(stat_order) == len(stats):
+		raise ValueError('Stat order and stats not the same length.')
+	return dict(zip(stat_order, stats))
 
 
 class Parser(object):
@@ -112,18 +118,36 @@ class Parser(object):
 		else:
 			logger.warning('%s is not an available directory.' % directory)
 
-	# def parse_file(self, filepath, csv=False, csv_sep='\t'):
-	# 	"""
-	# 	Parse a text csv or text file containing file listings.
-	#
-	# 	:param filepath:
-	# 	:return:
-	# 	"""
-	# 	if isinstance(filepath, str) and os.path.isfile(filepath):
-	# 		with open(filepath, 'r') as file_list:
-	# 			for file_ in file_list:
-	# 				self.sort_file(file_.rstrip())
-	#
+	def parse_file(self, filepath, csv=False, csv_sep=cfg.csv_sep,
+				stat_order=None):
+		"""
+		Parse a text csv or text file containing file listings.
+
+		:param filepath:
+		:return:
+		"""
+		# test for proper stats names
+		if stat_order:
+			Stat(dict((x, None) for x in stat_order))
+
+		self._reset()
+		if isinstance(filepath, str) and os.path.isfile(filepath):
+			with open(filepath, 'r') as file_list:
+				for file_ in file_list:
+					if csv:
+						file_ = file_.rstrip().split(csv_sep)
+						filename = file_[0]
+						if cfg.get_stats:
+							stats = map_stats(stat_order, file_[1:])
+							self._sort_file(filename, stats)
+						else:
+							self._sort_file(filename)
+					else:
+						self._sort_file(file_.rstrip())
+			self._cleanup()
+		else:
+			logger.warning('%s is not a valid filepath.' % filepath)
+
 	# def parse_list(self, file_list):
 	# 	"""
 	# 	Parse a list of files.
