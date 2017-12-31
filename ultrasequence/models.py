@@ -405,11 +405,11 @@ class Sequence(object):
 			self.append(file)
 
 	def __str__(self):
-		return self.formatter(DEFAULT_FORMAT)
+		return self.format(DEFAULT_FORMAT)
 
 	def __repr__(self):
 		return "Sequence('%s', frames=%d)" % (
-			self.formatter(DEFAULT_FORMAT), self.frames)
+			self.format(DEFAULT_FORMAT), self.frames)
 
 	def __len__(self):
 		return len(self._frames)
