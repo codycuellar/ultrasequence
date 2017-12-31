@@ -45,7 +45,7 @@ def extract_frame(name):
 
 def split_extension(filename):
 	"""
-	Splits the extension off the filename and returns a tuple of the 
+	Splits the extension off the filename and returns a tuple of the
 	base filename and the extension (without the dot).
 	"""
 	parts = filename.split('.')
@@ -133,7 +133,7 @@ class File(object):
 		When passing data into the stat argument, the object passed
 		in can be either an actual os.stat_result object, a dictionary
 		mapping that matches the sequencer.Stat parameter names, or an
-		iterable of int like items that matches the order of the 
+		iterable of int like items that matches the order of the
 		sequencer.Stat class params in the __init__ method.
 
 		:param str filepath: the absolute filepath of the file
@@ -362,9 +362,9 @@ class File(object):
 		"""
 		Make sequence name identifier
 
-		:param bool ignore_padding: enforce padding 
+		:param bool ignore_padding: enforce padding
 		:return: sequence name with '#' for frame number if padding ignored
-			or standerd padding format '%0#d' where '#' is padding amount. 
+			or standard padding format '%0#d' where '#' is padding amount.
 		"""
 		if ignore_padding is None:
 			ignore_padding = cfg.ignore_padding

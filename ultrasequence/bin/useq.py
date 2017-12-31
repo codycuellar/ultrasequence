@@ -1,5 +1,5 @@
 import argparse
-from ultrasequence import config as cfg
+from ultrasequence.config import cfg
 
 
 def arg_handler():
@@ -33,8 +33,6 @@ def arg_handler():
 						action='store_false',
 						default=cfg.get_stats
 						)
-
-
 
 	parser.add_argument('-p', '--ignore-padding')
 	parser.add_argument('-D', '--debug')
