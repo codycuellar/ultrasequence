@@ -46,6 +46,10 @@ class Parser(object):
 			self.include_exts = set()
 		else:
 			self.include_exts = set([ext.lower() for ext in include_exts])
+		if not exclude_exts:
+			self.exclude_exts = set()
+		else:
+			self.exclude_exts = set([ext.lower() for ext in exclude_exts])
 		self._reset()
 
 	def _reset(self):
@@ -80,7 +84,8 @@ class Parser(object):
 	def _sort_file(self, file_, stats=None):
 		file_ = File(file_, stats=stats)
 
-		if self.include_exts and file_.ext.lower() not in self.include_exts:
+		if file_.ext.lower() not in self.include_exts \
+				or file_.ext.lower() in self.exclude_exts:
 			self.excluded.append(file_)
 
 		elif file_.frame is None:
