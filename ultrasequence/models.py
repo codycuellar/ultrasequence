@@ -450,6 +450,10 @@ class Sequence(object):
 		return len(self)
 
 	@property
+	def frame_numbers(self):
+		return list(sorted(self._frames))
+
+	@property
 	def implied_frames(self):
 		""" Number of expected frames in sequence """
 		return self.end - self.start + 1
