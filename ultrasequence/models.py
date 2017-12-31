@@ -145,12 +145,12 @@ class File(object):
 		"""
 		cfg.get_stats = get_stats
 		self.abspath = filepath
-		self.dir, self.name = os.path.split(filepath)
+		self.path, self.name = os.path.split(filepath)
 		self._base, self.ext = split_extension(self.name)
 
 		parts = extract_frame(self._base)
 		self.namehead, self._framenum, tail = parts
-		self.head = os.path.join(self.dir, self.namehead)
+		self.head = os.path.join(self.path, self.namehead)
 		if not self.ext:
 			self.tail = ''
 		else:
@@ -394,7 +394,7 @@ class Sequence(object):
 		cfg.ignore_padding = ignore_padding
 		self._frames = {}
 		self.seq_name = ''
-		self.dir = ''
+		self.path = ''
 		self.namehead = ''
 		self.head = ''
 		self.tail = ''
@@ -514,7 +514,7 @@ class Sequence(object):
 			raise ValueError('%s can not be sequenced.' % str(file))
 		if not self.frames:
 			self.namehead = file.namehead
-			self.dir = file.dir
+			self.path = file.path
 			self.head = file.head
 			self.tail = file.tail
 			self.ext = file.ext
@@ -561,9 +561,9 @@ class Sequence(object):
 		| '%M' |  broken explicit missing ranges |  '[141-147, 149]'
 		|      |  ignores padding                |
 		|--------------------------------------------------------------------
-		| '%d' |  '#' signs denoting padding     |  '####'
+		| '%D' |  '#' digits denoting padding    |  '####'
 		|--------------------------------------------------------------------
-		| '%D' |  '%' style padding              |  '%04d'
+		| '%P' |  '%' style padding              |  '%04d'
 		|--------------------------------------------------------------------
 		| '%t' |  tail chars after frame, no ext |  '.final'
 		|--------------------------------------------------------------------
@@ -587,8 +587,8 @@ class Sequence(object):
 			'%R': self.__explicit_range,
 			'%m': self.__num_missing_frames,
 			'%M': self.__explicit_missing_range,
-			'%d': self.__digits_pound_signs,
-			'%D': self.__digits_padding,
+			'%D': self.__digits_pound_signs,
+			'%P': self.__digits_padding,
 			'%t': self.__tail_without_ext,
 			'%T': self.__tail,
 			'%e': self.__ext,
@@ -615,7 +615,7 @@ class Sequence(object):
 
 	def __path(self):
 		""" Internal formatter method """
-		return self.dir
+		return self.path
 
 	def __namehead(self):
 		""" Internal formatter method """
@@ -636,7 +636,7 @@ class Sequence(object):
 
 	def __explicit_range(self):
 		""" Internal formatter method """
-		return frame_ranges_to_string(self.get_frames())
+		return frame_ranges_to_string(sorted(self._frames))
 
 	def __num_missing_frames(self):
 		""" Internal formatter method """
