@@ -72,7 +72,7 @@ class TestFile(TestCase):
 	def test_normal_file_init(self):
 		file = sq.File('/path/to/file.01000.more.ext')
 		self.assertEqual(file.abspath, '/path/to/file.01000.more.ext')
-		self.assertEqual(file.path, '/path/to')
+		self.assertEqual(file.dir, '/path/to')
 		self.assertEqual(file.name, 'file.01000.more.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.namehead, 'file.')
@@ -85,7 +85,7 @@ class TestFile(TestCase):
 	def test_no_number_file_init(self):
 		file = sq.File('/path/to/file.ext')
 		self.assertEqual(file.abspath, '/path/to/file.ext')
-		self.assertEqual(file.path, '/path/to')
+		self.assertEqual(file.dir, '/path/to')
 		self.assertEqual(file.name, 'file.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.namehead, 'file')
@@ -98,7 +98,7 @@ class TestFile(TestCase):
 	def test_number_only_file_init(self):
 		file = sq.File('/path/to/01234.ext')
 		self.assertEqual(file.abspath, '/path/to/01234.ext')
-		self.assertEqual(file.path, '/path/to')
+		self.assertEqual(file.dir, '/path/to')
 		self.assertEqual(file.name, '01234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '/path/to/')
@@ -110,7 +110,7 @@ class TestFile(TestCase):
 	def test_number_only_no_path_file_init(self):
 		file = sq.File('1234.ext')
 		self.assertEqual(file.abspath, '1234.ext')
-		self.assertEqual(file.path, '')
+		self.assertEqual(file.dir, '')
 		self.assertEqual(file.name, '1234.ext')
 		self.assertEqual(file.ext, 'ext')
 		self.assertEqual(file.head, '')
@@ -231,7 +231,7 @@ class TestSequence(TestCase):
 		self.assertEqual(seq.seq_name, '/path/to/file.#.ext')
 		self.assertEqual(seq.namehead, 'file.')
 		self.assertEqual(seq.head, '/path/to/file.')
-		self.assertEqual(seq.path, '/path/to')
+		self.assertEqual(seq.dir, '/path/to')
 		self.assertEqual(seq.tail, '.ext')
 		self.assertEqual(seq.ext, 'ext')
 		self.assertEqual(seq.padding, 4)

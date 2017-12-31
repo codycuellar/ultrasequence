@@ -142,12 +142,12 @@ class File(object):
 			if they were supplied.
 		"""
 		self.abspath = filepath
-		self.path, self.name = os.path.split(filepath)
+		self.dir, self.name = os.path.split(filepath)
 		self._base, self.ext = split_extension(self.name)
 
 		parts = extract_frame(self._base)
 		self.namehead, self._framenum, tail = parts
-		self.head = os.path.join(self.path, self.namehead)
+		self.head = os.path.join(self.dir, self.namehead)
 		if not self.ext:
 			self.tail = ''
 		else:
@@ -386,7 +386,7 @@ class Sequence(object):
 		"""
 		self._frames = {}
 		self.seq_name = ''
-		self.path = ''
+		self.dir = ''
 		self.namehead = ''
 		self.head = ''
 		self.tail = ''
@@ -417,6 +417,10 @@ class Sequence(object):
 		elif isinstance(frames, (tuple, list)):
 			return [self._frames[x] for x in frames]
 		return self._frames[frames]
+
+	@property
+	def name(self):
+		return os.path.basename(self.seq_name)
 
 	@property
 	def start(self):
@@ -482,7 +486,7 @@ class Sequence(object):
 			raise ValueError('%s can not be sequenced.' % str(file))
 		if not self.frames:
 			self.namehead = file.namehead
-			self.path = file.path
+			self.dir = file.dir
 			self.head = file.head
 			self.tail = file.tail
 			self.ext = file.ext
@@ -583,7 +587,7 @@ class Sequence(object):
 
 	def __path(self):
 		""" Internal formatter method """
-		return self.path
+		return self.dir
 
 	def __namehead(self):
 		""" Internal formatter method """
