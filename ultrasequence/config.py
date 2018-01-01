@@ -2,33 +2,58 @@ try:
 	import configparser
 except ImportError:
 	import ConfigParser as configparser
-import shutil
 import os
 
 
-LOCAL_CONFIG = os.path.expanduser('~/.ultrasequence')
+class Config(object):
+	def __init__(self):
+		self.default_config = {
+			'global': {
+				'recurse': 'true',
+				'ignore_padding': 'true',
+				'include_exts': '',
+				'exclude_exts': '',
+			},
+			'stats': {
+				'get_stats': 'false',
+				'stat_order': '',
+			},
+			'csv': {
+				'csv': 'false',
+				'csv_sep': r'\t'
+			}
+		}
+		self.user_config_file = os.path.expanduser('~/.useq.ini')
+		self.default_parser = configparser.ConfigParser()
+		self.default_parser.read_dict(self.default_config)
+		self._load_config(self.default_parser)
+		self._load_user_config()
 
-if os.path.exists(LOCAL_CONFIG):
-	pass
-else:
-	this_dir = os.path.dirname(__file__)
-	CONFIG_TEMPLATE = os.path.join(this_dir, 'config_template.ini')
-	try:
-		shutil.copy(
-			CONFIG_TEMPLATE,
-			LOCAL_CONFIG
-		)
-	except FileNotFoundError:
-		LOCAL_CONFIG = CONFIG_TEMPLATE
+	def _load_config(self, cfgparser):
+		self.recurse = cfgparser['global'].getboolean('recurse')
+		self.ignore_padding = cfgparser['global'].getboolean('ignore_padding')
+		self.include_exts = cfgparser['global']['include_exts'].split()
+		self.exclude_exts = cfgparser['global']['exclude_exts'].split()
+		self.get_stats = cfgparser['stats'].getboolean('get_stats')
+		self.stat_order = cfgparser['stats']['stat_order'].split()
+		self.csv = cfgparser['csv'].getboolean('csv')
+		self.csv_sep = cfgparser['csv']['csv_sep']
+
+	def _load_user_config(self):
+		if os.path.exists(self.user_config_file):
+			cfgparser = configparser.ConfigParser()
+			cfgparser.read(self.user_config_file)
+			self._load_config(cfgparser)
+
+	def write_user_config(self):
+		with open(self.user_config_file, 'w') as f:
+			self.default_parser.write(f)
+		print('Made user config file at %s' % cfg.user_config_file)
 
 
-cfgparser = configparser.ConfigParser()
-cfgparser.read(LOCAL_CONFIG)
+cfg = Config()
 
-ignore_padding = cfgparser['global'].getboolean('ignore_padding')
-include_exts = cfgparser['global']['include_exts'].split()
-exclude_exts = cfgparser['global']['exclude_exts'].split()
-get_stats = cfgparser['stats'].getboolean('get_stats')
-stat_order = cfgparser['stats']['stat_order'].split()
-csv = cfgparser['csv'].getboolean('csv')
-csv_sep = cfgparser['csv']['csv_sep']
+
+# wrapper for __init__ import
+def write_user_config():
+	cfg.write_user_config()

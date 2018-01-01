@@ -2,7 +2,7 @@ import os
 import re
 import sys
 import logging
-from ultrasequence import config as cfg
+from ultrasequence.config import cfg
 
 
 logger = logging.getLogger(__name__)

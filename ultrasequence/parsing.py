@@ -1,7 +1,7 @@
 import os
 from os import walk
 from ultrasequence import File, Sequence, Stat
-from ultrasequence import config as cfg
+from ultrasequence.config import cfg
 import logging
 
 
