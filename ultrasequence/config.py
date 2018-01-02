@@ -62,8 +62,3 @@ class Config(object):
 
 
 cfg = Config()
-
-
-# wrapper for __init__ import
-def write_user_config():
-	cfg.write_user_config()
