@@ -9,22 +9,19 @@ class Config(object):
 	def __init__(self):
 		self.default_config = {
 			'global': {
+				'format': '%H%r%T',
 				'recurse': 'false',
 				'ignore_padding': 'true',
 				'include_exts': '',
 				'exclude_exts': '',
-			},
-			'stats': {
 				'get_stats': 'false',
 				'stat_order': '',
-			},
-			'csv': {
 				'csv': 'false',
 				'csv_sep': r'\t'
 			}
 		}
 		self.user_config_file = os.path.expanduser('~/.useq.ini')
-		self.default_parser = configparser.ConfigParser()
+		self.default_parser = configparser.RawConfigParser()
 		self.default_parser.read_dict(self.default_config)
 		self._load_config(self.default_parser)
 		self._load_user_config()
@@ -33,24 +30,25 @@ class Config(object):
 		return (
 			'Config({recurse=%s, ignore_padding=%s, include_exts=%s,'
 			'exclude_exts=%s, get_stats=%s, stat_order=%s, csv=%s, '
-			'csv_sep=%s)' %
+			'csv_sep=%s, format=%s)' %
 			(self.recurse, self.ignore_padding, self.include_exts,
 			 self.exclude_exts, self.get_stats, self.stat_order, self.csv,
-			 self.csv_sep))
+			 self.csv_sep, self.format))
 
 	def _load_config(self, cfgparser):
+		self.format = cfgparser['global']['format']
 		self.recurse = cfgparser['global'].getboolean('recurse')
 		self.ignore_padding = cfgparser['global'].getboolean('ignore_padding')
 		self.include_exts = cfgparser['global']['include_exts'].split()
 		self.exclude_exts = cfgparser['global']['exclude_exts'].split()
-		self.get_stats = cfgparser['stats'].getboolean('get_stats')
-		self.stat_order = cfgparser['stats']['stat_order'].split()
-		self.csv = cfgparser['csv'].getboolean('csv')
-		self.csv_sep = cfgparser['csv']['csv_sep']
+		self.get_stats = cfgparser['global'].getboolean('get_stats')
+		self.stat_order = cfgparser['global']['stat_order'].split()
+		self.csv = cfgparser['global'].getboolean('csv')
+		self.csv_sep = cfgparser['global']['csv_sep']
 
 	def _load_user_config(self):
 		if os.path.exists(self.user_config_file):
-			cfgparser = configparser.ConfigParser()
+			cfgparser = configparser.RawConfigParser()
 			cfgparser.read(self.user_config_file)
 			self._load_config(cfgparser)
 

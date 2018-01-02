@@ -16,7 +16,6 @@ if sys.version_info < (3, 5):
 					'recommended. Run >>> pip install scandir')
 
 FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
-DEFAULT_FORMAT = '%H%r%T'
 
 
 def extract_frame(name):
@@ -407,11 +406,11 @@ class Sequence(object):
 			self.append(file)
 
 	def __str__(self):
-		return self.format(DEFAULT_FORMAT)
+		return self.format(cfg.format)
 
 	def __repr__(self):
 		return "Sequence('%s', frames=%d)" % (
-			self.format(DEFAULT_FORMAT), self.frames)
+			self.format(cfg.format), self.frames)
 
 	def __len__(self):
 		return len(self._frames)
@@ -530,7 +529,7 @@ class Sequence(object):
 			self.padding = file.padding
 		self._frames[file.frame] = file
 
-	def format(self, format=DEFAULT_FORMAT):
+	def format(self, format=cfg.format):
 		"""
 		This formatter will replace any of the formatting directives
 		found in the format argument with it's string part. It will try
