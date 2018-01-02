@@ -146,9 +146,9 @@ class Parser(object):
 		"""
 		self._reset()
 		cfg.recurse = recurse
+		directory = os.path.expanduser(directory)
 		if isinstance(directory, str) and os.path.isdir(directory):
-			file_list = get_files_in_directory(
-				directory)
+			file_list = get_files_in_directory(directory)
 			while file_list:  # reduce memory consumption for large lists
 				file_ = file_list.pop(0)
 				if cfg.get_stats:
