@@ -181,6 +181,8 @@ class Parser(object):
 		# Test is stat_order strings are valid
 		Stat(dict((x, None) for x in stat_order))
 
+		filepath = os.path.expanduser(filepath)
+
 		self._reset()
 		if isinstance(filepath, str) and os.path.isfile(filepath):
 			with open(filepath, 'r') as file_list:
