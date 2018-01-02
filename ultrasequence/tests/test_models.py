@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest import TestCase
 from ultrasequence import models
+from ultrasequence.config import cfg
 
 
 TEST_SEQUENCES = os.path.join(os.path.dirname(__file__), 'data',
@@ -9,6 +10,8 @@ TEST_SEQUENCES = os.path.join(os.path.dirname(__file__), 'data',
 
 
 class TestExtractFrame(TestCase):
+	def setUp(self):
+		cfg.reset_defaults()
 
 	def test_frame_name(self):
 		result = models.extract_frame('/path/to/file.1000.more.ext')
@@ -32,6 +35,8 @@ class TestExtractFrame(TestCase):
 
 
 class TestSplitExtension(TestCase):
+	def setUp(self):
+		cfg.reset_defaults()
 
 	def test_split_single_dot(self):
 		split = models.split_extension('test.ext')
@@ -47,6 +52,8 @@ class TestSplitExtension(TestCase):
 
 
 class TestFrameRangesToString(TestCase):
+	def setUp(self):
+		cfg.reset_defaults()
 
 	def test_conver_list(self):
 		frames = [100, 101, 102, 104, 107, 108, 1010]
@@ -68,6 +75,8 @@ class TestFrameRangesToString(TestCase):
 
 
 class TestFile(TestCase):
+	def setUp(self):
+		cfg.reset_defaults()
 
 	def test_normal_file_init(self):
 		file = models.File('/path/to/file.01000.more.ext')
@@ -193,6 +202,7 @@ class TestFile(TestCase):
 
 class TestSequence(TestCase):
 	def setUp(self):
+		cfg.reset_defaults()
 		missing_files = [
 			'/abs/path/to/file_0100_name.ext',
 			'/abs/path/to/file_0101_name.ext',
@@ -304,6 +314,7 @@ class TestSequence(TestCase):
 
 class TestSequenceFormatting(TestCase):
 	def setUp(self):
+		cfg.reset_defaults()
 		files = [
 			'/abs/path/to/file_0100_name.ext',
 			'/abs/path/to/file_0101_name.ext',
