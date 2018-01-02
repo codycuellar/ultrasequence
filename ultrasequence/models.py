@@ -123,7 +123,7 @@ class Stat(object):
 
 
 class File(object):
-	def __init__(self, filepath, stats=None, get_stats=cfg.get_stats):
+	def __init__(self, filepath, stats=None, get_stats=None):
 		"""
 		Class which represents single files or frames on disk.
 		While initializing this object, it can be fed stat values
@@ -143,7 +143,8 @@ class File(object):
 			If file does not exists, revert back to applying stats values
 			if they were supplied.
 		"""
-		cfg.get_stats = get_stats
+		if get_stats is not None and isinstance(get_stats, bool):
+			cfg.get_stats = get_stats
 		self.abspath = filepath
 		self.path, self.name = os.path.split(filepath)
 		self._base, self.ext = split_extension(self.name)
@@ -366,7 +367,7 @@ class File(object):
 		:return: sequence name with '#' for frame number if padding ignored
 			or standard padding format '%0#d' where '#' is padding amount.
 		"""
-		if ignore_padding is None:
+		if ignore_padding is None or not isinstance(ignore_padding, bool):
 			ignore_padding = cfg.ignore_padding
 		if not self._framenum:
 			digits = ''
@@ -380,7 +381,7 @@ class File(object):
 
 
 class Sequence(object):
-	def __init__(self, file=None, ignore_padding=cfg.ignore_padding):
+	def __init__(self, file=None, ignore_padding=None):
 		"""
 		Class representing a sequence of matching file names. The frames
 		are stored in a dictionary with the frame numbers as keys. Sets
@@ -391,7 +392,8 @@ class Sequence(object):
 		:param bool ignore_padding: Setting to False will disallow
 			new frames from being appended if the frame padding differs.
 		"""
-		cfg.ignore_padding = ignore_padding
+		if ignore_padding is not None and isinstance(ignore_padding, bool):
+			cfg.ignore_padding = ignore_padding
 		self._frames = {}
 		self.seq_name = ''
 		self.path = ''

@@ -1,3 +1,12 @@
+"""
+This module contains functions and classes for parsing files and directories
+for file sequences. 
+
+** IMPORTANT **
+Currently, the directory scanner skips any links and they will not show up
+in any Parser list.
+"""
+
 import os
 from os import walk
 from ultrasequence import File, Sequence, Stat
@@ -8,7 +17,15 @@ import logging
 logger = logging.getLogger()
 
 
-def add_files(root, files):
+def get_files_in_dir(root, files):
+	"""
+	Assembles a list of files for a single directory.
+
+	:param root: the the root path to the current directory
+	:param files: the list of filenames in the directory
+	:return: a list of filenames if cfg.get_stats is False, or a list
+			 of tuples (filename, file_stats) if cfg.get_stats is True.
+	"""
 	dir_list = []
 	if cfg.get_stats:
 		for file in files:
@@ -21,13 +38,21 @@ def add_files(root, files):
 	return dir_list
 
 
-def get_files_in_directory(path, recurse=True):
+def get_files_in_directory(path):
+	"""
+	Searches a root directory and returns a list of all files. If 
+	cfg.recurse is True, the scanner will descend all child directories.
+
+	:param path: The root path to scan for files
+	:return: a list of filenames if cfg.get_stats is False, or a list
+			 of tuples (filename, file_stats) if cfg.get_stats is True.
+	"""
 	file_list = []
-	if recurse:
+	if cfg.recurse:
 		for root, dirs, files in walk(path):
-			file_list += add_files(root, files)
+			file_list += get_files_in_dir(root, files)
 	else:
-		file_list += add_files(path, os.listdir)
+		file_list += get_files_in_dir(path, os.listdir())
 	return file_list
 
 
@@ -38,18 +63,28 @@ def map_stats(stat_order, stats):
 
 
 class Parser(object):
-	def __init__(self, include_exts=None, exclude_exts=None,
-				 get_stats=cfg.get_stats, ignore_padding=cfg.ignore_padding):
-		cfg.get_stats = get_stats
-		cfg.ignore_padding = ignore_padding
-		if not include_exts:
+	def __init__(self, include_exts=cfg.include_exts,
+				 exclude_exts=cfg.exclude_exts, get_stats=cfg.get_stats,
+				 ignore_padding=cfg.ignore_padding):
+		"""
+		
+		:param list include_exts: 
+		:param list exclude_exts: 
+		:param bool get_stats: 
+		:param bool ignore_padding: 
+		"""
+		if not include_exts or not isinstance(include_exts, (tuple, list)):
 			self.include_exts = set()
 		else:
-			self.include_exts = set([ext.lower() for ext in include_exts])
-		if not exclude_exts:
+			self.include_exts = set(include_exts)
+
+		if not exclude_exts or not isinstance(exclude_exts, (tuple, list)):
 			self.exclude_exts = set()
 		else:
-			self.exclude_exts = set([ext.lower() for ext in exclude_exts])
+			self.exclude_exts = set(exclude_exts)
+
+		cfg.get_stats = get_stats
+		self.ignore_padding = ignore_padding
 		self._reset()
 
 	def _reset(self):
@@ -62,7 +97,7 @@ class Parser(object):
 		self.parsed = False
 
 	def __str__(self):
-		return ('Parser(sequenced=%d, single_frames=%d, non_sequenced=%d, '
+		return ('Parser(sequences=%d, single_frames=%d, non_sequences=%d, '
 				'excluded=%d, collisions=%d)' %
 				(len(self.sequences), len(self.single_frames),
 				 len(self.non_sequences), len(self.excluded),
@@ -101,7 +136,7 @@ class Parser(object):
 			else:
 				self._sequences[seq_name] = Sequence(file_)
 
-	def parse_directory(self, directory, recurse=True):
+	def parse_directory(self, directory, recurse=cfg.recurse):
 		"""
 		Parse a directory on the file system.
 
@@ -110,9 +145,10 @@ class Parser(object):
 		:return:
 		"""
 		self._reset()
+		cfg.recurse = recurse
 		if isinstance(directory, str) and os.path.isdir(directory):
 			file_list = get_files_in_directory(
-				directory, recurse)
+				directory)
 			while file_list:  # reduce memory consumption for large lists
 				file_ = file_list.pop(0)
 				if cfg.get_stats:
@@ -123,17 +159,19 @@ class Parser(object):
 		else:
 			logger.warning('%s is not an available directory.' % directory)
 
-	def parse_file(self, filepath, csv=False, csv_sep=cfg.csv_sep,
-				stat_order=None):
+	def parse_file(self, filepath, csv=cfg.csv, csv_sep=cfg.csv_sep,
+				   stat_order=cfg.stat_order):
 		"""
 		Parse a text csv or text file containing file listings.
 
-		:param filepath:
-		:return:
+		:param str filepath: 
+		:param bool csv: 
+		:param str csv_sep: 
+		:param list stat_order: 
+		:return: 
 		"""
-		# test for proper stats names
-		if stat_order:
-			Stat(dict((x, None) for x in stat_order))
+		# Test is stat_order strings are valid
+		Stat(dict((x, None) for x in stat_order))
 
 		self._reset()
 		if isinstance(filepath, str) and os.path.isfile(filepath):
