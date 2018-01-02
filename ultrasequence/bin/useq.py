@@ -1,4 +1,6 @@
 import argparse
+import os
+import ultrasequence as us
 from ultrasequence.version import __version__, NAME
 from ultrasequence.config import cfg
 
@@ -29,14 +31,15 @@ def get_args():
 						help='path to source file or directory to scan.'
 						)
 
-	parser.add_argument('output',
-						type=str,
-						help='output file to save results to.'
-						)
+	# parser.add_argument('output',
+	# 					type=str,
+	# 					help='output file to save results to.'
+	# 					)
 
 	parser.add_argument('-v', '--version',
 						action='version',
-						version='%s v%s' % (NAME, __version__))
+						version='%s v%s' % (NAME, __version__)
+						)
 
 	parser.add_argument('-M', '--make-user-cfg',
 						action=UserConfig,
@@ -45,6 +48,11 @@ def get_args():
 	parser.add_argument('-I', '--ignore-config',
 						action='store_true',
 						help='ignore the user config file if it exists'
+						)
+
+	parser.add_argument('-f', '--format',
+						type=str,
+						help=''
 						)
 
 	parser.add_argument('-i', '--include',
@@ -102,10 +110,13 @@ def get_args():
 	return parser.parse_args()
 
 
-def main(args):
+def main():
+	args = get_args()
+
 	if args.ignore_config:
 		cfg.reset_defaults()
-
+	if args.format:
+		cfg.format = args.format
 	if args.include:
 		cfg.include_exts = args.include
 	if args.exclude:
@@ -121,10 +132,24 @@ def main(args):
 	if args.strict_padding:
 		cfg.ignore_padding = False
 
-	print(cfg)
-	print(args)
+	parser = us.Parser(include_exts=cfg.include_exts,
+					   exclude_exts=cfg.exclude_exts,
+					   get_stats=cfg.get_stats,
+					   ignore_padding=cfg.ignore_padding)
+
+	if os.path.isdir(args.source):
+		parser.parse_directory(args.source, recurse=cfg.recurse)
+	elif os.path.isfile(args.source):
+		parser.parse_file(args.source, csv=cfg.csv, csv_sep=cfg.csv_sep,
+						  stat_order=cfg.stat_order)
+
+	output = parser.sequences + parser.single_frames + parser.non_sequences + \
+			 parser.collisions + parser.excluded
+	output.sort(key=lambda x: x.abspath.lower())
+
+	for x in output:
+		print(x)
 
 
 if __name__ == '__main__':
-	args = get_args()
-	main(args)
+	main()
