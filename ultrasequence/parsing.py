@@ -119,7 +119,7 @@ class Parser(object):
 	def _sort_file(self, file_, stats=None):
 		file_ = File(file_, stats=stats)
 
-		if file_.ext.lower() not in self.include_exts \
+		if self.include_exts and file_.ext.lower() not in self.include_exts \
 				or file_.ext.lower() in self.exclude_exts:
 			self.excluded.append(file_)
 
