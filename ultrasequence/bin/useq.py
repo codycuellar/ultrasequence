@@ -21,8 +21,8 @@ class UserConfig(argparse.Action):
 		parser.exit()
 
 
-def arg_handler():
-	parser = argparse.ArgumentParser()
+def get_args():
+	parser = argparse.ArgumentParser(prog=NAME)
 
 	parser.add_argument('source',
 						type=str,
@@ -34,58 +34,97 @@ def arg_handler():
 						help='output file to save results to.'
 						)
 
-	# parser.add_argument('-c', '--configfile',
-	# 					action='store_true',
-	# 					help='this will read all values from config file '
-	# 						 '~/.ultrasequence - setting flags will override'
-	# 					)
+	parser.add_argument('-v', '--version',
+						action='version',
+						version='%s v%s' % (NAME, __version__))
 
 	parser.add_argument('-M', '--make-user-cfg',
 						action=UserConfig,
 						)
 
-	parser.add_argument('-v', '--version',
-						action='version',
-						version='%s v%s' % (NAME, __version__))
+	parser.add_argument('-I', '--ignore-config',
+						action='store_true',
+						help='ignore the user config file if it exists'
+						)
+
+	parser.add_argument('-i', '--include',
+						type=str,
+						nargs='+',
+						help='list of file extensions without preceding dot '
+							 'to include in sequencer'
+						)
+
+	parser.add_argument('-e', '--exclude',
+						type=str,
+						nargs='+',
+						help='list of file extensions without preceding dot '
+							 'to exclude in sequencer'
+						)
+
+	parser.add_argument('-R', '--recurse',
+						action='store_true',
+						help='enable directory recursion for directory parser.'
+						)
+
+	parser.add_argument('-c', '--csv',
+						action='store_true',
+						help=''
+						)
+
+	parser.add_argument('--csv-sep',
+						type=str,
+						help=''
+						)
+
+	parser.add_argument('-s', '--get-stats',
+						action='store_true',
+						help=''
+						)
+
+	parser.add_argument('--stat-order',
+						type=str,
+						nargs='+',
+						help='order of stats after separating a csv for file '
+							 'parser'
+						)
+
+	parser.add_argument('-p', '--strict-padding',
+						action='store_true',
+						help='disables the ignore_padding rule. This will '
+							 'treat all files with different amount of digit '
+							 'padding as separate sequences.'
+						)
+
+	# parser.add_argument('-H', '--suppress-logging')
+	# parser.add_argument('-l', '--logfile')
+	# parser.add_argument('-D', '--debug')
 
 	return parser.parse_args()
 
-	# parser.add_argument('-r', '--disable-recurse',
-	# 					action='store_false',
-	# 					help='this will force disable directory recursion. if '
-	# 						 'not specified, will fall back to config file.'
-	# 					)
-	#
-	# parser.add_argument('-c', '--csv')
-	# parser.add_argument('-s', '--csv-sep')
-	# parser.add_argument('-c', '--csv')
-	#
-	# parser.add_argument('-i', '--include',
-	# 					help=''
-	# 					)
-	#
-	# parser.add_argument('-e', '--exclude',
-	# 					help=''
-	# 					)
-	#
-	# parser.add_argument('-S', '--get-stats',
-	# 					action='store_false',
-	# 					default=cfg.get_stats
-	# 					)
-	#
-	# parser.add_argument('-p', '--ignore-padding')
-	# parser.add_argument('-D', '--debug')
-	# parser.add_argument('-l', '--logfile')
-	# parser.add_argument('-H', '--suppress-logging')
-	# parser.add_argument('-H', '--suppress-logging')
-	# parser.add_argument('-H', '--suppress-logging')
-
 
 def main(args):
-	pass
+	if args.ignore_config:
+		cfg.reset_defaults()
+
+	if args.include:
+		cfg.include_exts = args.include
+	if args.exclude:
+		cfg.exclude_exts = args.exclude
+	if args.recurse:
+		cfg.recurse = True
+	if args.csv:
+		cfg.csv = True
+	if args.csv_sep:
+		cfg.csv_sep = args.csv_sep
+	if args.get_stats:
+		cfg.get_stats = args.get_stats
+	if args.strict_padding:
+		cfg.ignore_padding = False
+
+	print(cfg)
+	print(args)
 
 
 if __name__ == '__main__':
-	args = arg_handler()
-	print('got here')
+	args = get_args()
 	main(args)
