@@ -431,6 +431,10 @@ class Sequence(object):
 			return self.seq_name < other.seq_name
 
 	@property
+	def abspath(self):
+		return self.seq_name
+
+	@property
 	def name(self):
 		return os.path.basename(self.seq_name)
 
