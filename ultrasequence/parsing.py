@@ -8,6 +8,7 @@ in any Parser list.
 """
 
 import os
+import sys
 from os import walk
 from ultrasequence import File, Sequence, Stat
 from ultrasequence.config import cfg
@@ -15,6 +16,13 @@ import logging
 
 
 logger = logging.getLogger()
+
+if sys.version_info < (3, 5):
+	try:
+		from scandir import walk
+	except ImportError:
+		logger.info('For Python versions < 3.5, scandir module is '
+					'recommended. Run >>> pip install scandir')
 
 
 def get_files_in_dir(root, files):
@@ -52,7 +60,7 @@ def get_files_in_directory(path):
 		for root, dirs, files in walk(path):
 			file_list += get_files_in_dir(root, files)
 	else:
-		file_list += get_files_in_dir(path, os.listdir())
+		file_list += get_files_in_dir(path, os.listdir(path))
 	return file_list
 
 

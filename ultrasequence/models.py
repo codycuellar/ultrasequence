@@ -1,19 +1,10 @@
 import os
 import re
-import sys
 import logging
 from ultrasequence.config import cfg
 
 
 logger = logging.getLogger(__name__)
-
-
-if sys.version_info < (3, 5):
-	try:
-		from scandir import walk
-	except ImportError:
-		logger.info('For Python versions < 3.5, scandir module is '
-					'recommended. Run >>> pip install scandir')
 
 FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
 
