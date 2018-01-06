@@ -120,7 +120,7 @@ class Parser(object):
 		while self._sequences:
 			seq = self._sequences.popitem()[1]
 			if seq.frames == 1:
-				self.single_frames.append(seq)
+				self.single_frames.append(seq[0])
 			else:
 				self.sequences.append(seq)
 		self.parsed = True
