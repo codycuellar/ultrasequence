@@ -42,7 +42,8 @@ def get_files_in_dir(root, files):
 				continue
 			dir_list.append((abspath, os.stat(abspath)))
 	else:
-		dir_list += [os.path.join(root, file) for file in files]
+		dir_list += [os.path.join(root, file) for file in files
+					 if os.path.isfile(os.path.join(root, file))]
 	return dir_list
 
 
