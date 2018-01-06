@@ -7,11 +7,11 @@ Currently, the directory scanner skips any links and they will not show up
 in any Parser list.
 """
 
-import os
-import sys
-from os import walk
+from .config import cfg
 from ultrasequence import File, Sequence, Stat
-from ultrasequence.config import cfg
+import os
+from os import walk
+import sys
 import logging
 
 

@@ -17,10 +17,16 @@ class Config(object):
 				'get_stats': 'false',
 				'stat_order': '',
 				'csv': 'false',
-				'csv_sep': r'\t'
+				'csv_sep': r'\t',
+			},
+			'regex': {
+				'frame_extract': r'((.*)(\D))?(\d+)(.*)',
+				'head_group': 0,
+				'frame_group': 3,
+				'tail_group': 4,
 			}
 		}
-		self.user_config_file = os.path.expanduser('~/.useq.ini')
+		self.user_config_file = os.path.expanduser('~/.useq.conf')
 		self.default_parser = configparser.RawConfigParser()
 		self.default_parser.read_dict(self.default_config)
 		self._load_config(self.default_parser)
@@ -45,6 +51,10 @@ class Config(object):
 		self.stat_order = cfgparser['global']['stat_order'].split()
 		self.csv = cfgparser['global'].getboolean('csv')
 		self.csv_sep = cfgparser['global']['csv_sep']
+		self.frame_extract_re = cfgparser['regex']['frame_extract']
+		self.head_group = cfgparser['regex'].getint('head_group')
+		self.frame_group = cfgparser['regex'].getint('frame_group')
+		self.tail_group = cfgparser['regex'].getint('tail_group')
 
 	def _load_user_config(self):
 		if os.path.exists(self.user_config_file):

@@ -1,12 +1,10 @@
+from .config import cfg
 import os
 import re
 import logging
-from ultrasequence.config import cfg
 
 
 logger = logging.getLogger(__name__)
-
-FRAMENUM_RE = re.compile(r'((.*)(\D))?(\d+)(.*)')
 
 
 def extract_frame(name):
@@ -22,10 +20,11 @@ def extract_frame(name):
 			 last set of digits, the frame number (last set of digits), and
 			 tail (all digits succeeding the frame number).
 	"""
-	frame_match = re.match(FRAMENUM_RE, name)
+	frame_match = re.match(cfg.frame_extract_re, name)
 	if frame_match:
 		groups = frame_match.groups()
-		head, frame, tail = groups[0], groups[3], groups[4]
+		head, tail = groups[cfg.head_group], groups[cfg.tail_group]
+		frame = groups[cfg.frame_group]
 	else:
 		head, frame, tail = (name, '', '')
 	if head is None:
