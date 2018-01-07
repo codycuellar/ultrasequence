@@ -1,7 +1,9 @@
 try:
 	import configparser
+	PYTHON_VERSION = 3
 except ImportError:
 	import ConfigParser as configparser
+	PYTHON_VERSION = 2
 import os
 
 
@@ -28,7 +30,19 @@ class Config(object):
 		}
 		self.user_config_file = os.path.expanduser('~/.useq.conf')
 		self.default_parser = configparser.RawConfigParser()
-		self.default_parser.read_dict(self.default_config)
+
+		if PYTHON_VERSION == 3:
+			self.default_parser.read_dict(self.default_config)
+		else:
+			self.default_parser.add_section('global')
+			for key in self.default_config['global'].keys():
+				self.default_parser.set(
+					'global', key, self.default_config['global'][key])
+			self.default_parser.add_section('regex')
+			for key in self.default_config['regex'].keys():
+				self.default_parser.set(
+					'regex', key, self.default_config['regex'][key])
+
 		self._load_config(self.default_parser)
 		self._load_user_config()
 
@@ -42,19 +56,19 @@ class Config(object):
 			 self.csv_sep, self.format))
 
 	def _load_config(self, cfgparser):
-		self.format = cfgparser['global']['format']
-		self.recurse = cfgparser['global'].getboolean('recurse')
-		self.ignore_padding = cfgparser['global'].getboolean('ignore_padding')
-		self.include_exts = cfgparser['global']['include_exts'].split()
-		self.exclude_exts = cfgparser['global']['exclude_exts'].split()
-		self.get_stats = cfgparser['global'].getboolean('get_stats')
-		self.stat_order = cfgparser['global']['stat_order'].split()
-		self.csv = cfgparser['global'].getboolean('csv')
-		self.csv_sep = cfgparser['global']['csv_sep']
-		self.frame_extract_re = cfgparser['regex']['frame_extract']
-		self.head_group = cfgparser['regex'].getint('head_group')
-		self.frame_group = cfgparser['regex'].getint('frame_group')
-		self.tail_group = cfgparser['regex'].getint('tail_group')
+		self.format = cfgparser.get('global', 'format')
+		self.recurse = cfgparser.getboolean('global', 'recurse')
+		self.ignore_padding = cfgparser.getboolean('global', 'ignore_padding')
+		self.include_exts = cfgparser.get('global', 'include_exts').split()
+		self.exclude_exts = cfgparser.get('global', 'exclude_exts').split()
+		self.get_stats = cfgparser.getboolean('global', 'get_stats')
+		self.stat_order = cfgparser.get('global', 'stat_order').split()
+		self.csv = cfgparser.getboolean('global', 'csv')
+		self.csv_sep = cfgparser.get('global', 'csv_sep')
+		self.frame_extract_re = cfgparser.get('regex', 'frame_extract')
+		self.head_group = cfgparser.getint('regex', 'head_group')
+		self.frame_group = cfgparser.getint('regex', 'frame_group')
+		self.tail_group = cfgparser.getint('regex', 'tail_group')
 
 	def _load_user_config(self):
 		if os.path.exists(self.user_config_file):

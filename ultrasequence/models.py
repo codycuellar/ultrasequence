@@ -3,6 +3,11 @@ import os
 import re
 import logging
 
+try:
+	FileNotFoundError
+except NameError:
+	FileNotFoundError = OSError
+
 
 logger = logging.getLogger(__name__)
 

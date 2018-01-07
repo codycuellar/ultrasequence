@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 --------------------------------------------------
 **  An ultra-fast file sequencing tool.  **
