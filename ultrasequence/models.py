@@ -98,7 +98,7 @@ class Stat(object):
 	directory which the current machine does not have access to.
 	"""
 
-	def __init__(self, size=None, inode=None, ctime=None, mtime=None,
+	def __init__(self, size=None, ino=None, ctime=None, mtime=None,
 				 atime=None, mode=None, dev=None, nlink=None, uid=None,
 				 gid=None):
 		"""
@@ -116,7 +116,7 @@ class Stat(object):
 		:param int gid: Group id of the owner.
 		"""
 		self.st_size = size
-		self.st_ino = inode
+		self.st_ino = ino
 		self.st_nlink = nlink
 		self.st_dev = dev
 		self.st_mode = mode
