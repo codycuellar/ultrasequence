@@ -198,30 +198,28 @@ class File(object):
 		return "File('%s')" % self.abspath
 
 	def __lt__(self, other):
-		if isinstance(other, File) \
-				and self.get_seq_key() == other.get_seq_key():
-			return self.frame_as_str < other.frame_as_str
+		if isinstance(other, File):
+			return self.frame < other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __gt__(self, other):
-		if isinstance(other, File) \
-				and self.get_seq_key() == other.get_seq_key():
-			return self.frame_as_str > other.frame_as_str
+		if isinstance(other, File):
+			return self.frame > other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __le__(self, other):
 		if isinstance(other, File) \
 				and self.get_seq_key() == other.get_seq_key():
-			return self.frame_as_str <= other.frame_as_str
+			return self.frame <= other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __ge__(self, other):
 		if isinstance(other, File) \
 				and self.get_seq_key() == other.get_seq_key():
-			return self.frame_as_str >= other.frame_as_str
+			return self.frame >= other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
