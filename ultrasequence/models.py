@@ -9,16 +9,20 @@ logger = logging.getLogger(__name__)
 
 def extract_frame(name):
 	"""
-	This function extracts the last set of digits in the string name and
-	assumes it is the frame number when returning the parts.
+	This function by default extracts the last set of digits in the
+	string name and assumes it is the frame number when returning the
+	parts.
 
-	It's a good idea to only pass basenames without extenions so it doesn't
-	attempt to sequence directory names or digits in the extension.
+	It's a good idea to only pass basenames without extenions so it 
+	doesn't attempt to sequence directory names or digits in the
+	extension.
 
 	:param str name: file basename without dir or extension
-	:return: 3-pair tuple consisting of the head (all characters preceding the
-			 last set of digits, the frame number (last set of digits), and
-			 tail (all digits succeeding the frame number).
+	
+	:return: 3-pair tuple consisting of the head (all characters
+			 preceding the last set of digits), the frame number
+			 (last set of digits), and tail (all digits succeeding
+			 the frame number).
 	"""
 	frame_match = re.match(cfg.frame_extract_re, name)
 	if frame_match:
@@ -36,6 +40,11 @@ def split_extension(filename):
 	"""
 	Splits the extension off the filename and returns a tuple of the
 	base filename and the extension (without the dot).
+	
+	:param str filename: the base filename string to split
+	
+	:return: a tuple of the head (characters before the last .) and
+			 the extension (characters after the last .)
 	"""
 	parts = filename.split('.')
 	if len(parts) < 2:
@@ -47,10 +56,11 @@ def split_extension(filename):
 
 def frame_ranges_to_string(frame_list):
 	"""
-	Take a flat list of ordered numbers and make a string representation
-	of the ranges.
+	Take a flat list of ordered numbers and make a string
+	representation of the ranges.
 
 	:param iterable frame_list: sorted list of frame numbers
+	
 	:return: string of broken frame ranges (i.e '[10-14, 16, 20-25]')
 	"""
 	if not frame_list:
@@ -77,16 +87,29 @@ def frame_ranges_to_string(frame_list):
 
 class Stat(object):
 	"""
-	This class mocks object returned by os.stat on Unix platforms. The File
-	class passes dicts with **kwargs and iterables with *args. When passing
-	an iterable to File class, make sure the stats are int-like items in
-	the same order as the params in Stat.__init__.
-
+	This class mocks object returned by os.stat on Unix platforms.
+	This is useful for instance when working with offline lists where 
+	you want to maintain the stat information from a previously parsed
+	directory which the current machine does not have access to.
 	"""
 
 	def __init__(self, size=None, inode=None, ctime=None, mtime=None,
 				 atime=None, mode=None, dev=None, nlink=None, uid=None,
 				 gid=None):
+		"""
+		Refer to the docs for the the built-in os.stat module for more info.
+		
+		:param int size: File size in bytes
+		:param int inode: Inode number
+		:param float ctime: Unix change timestamp
+		:param float mtime: Unix modify timestamp
+		:param float atime: Unix access timestamp
+		:param int mode: Inode protection mode.
+		:param int dev: Device inode resides on.
+		:param int nlink: Number of links to the inode.
+		:param int uid: User id of the owner.
+		:param int gid: Group id of the owner.
+		"""
 		self.st_size = size
 		self.st_ino = inode
 		self.st_nlink = nlink
@@ -112,25 +135,23 @@ class Stat(object):
 
 
 class File(object):
+	"""
+	The class that represents a single file and all of it's Stat
+	attributes if available. It contains attributes for the 
+	various string parts of the path, base filename, frame number
+	and extension. All Sequences are comprised of File objects.
+	"""
+
 	def __init__(self, filepath, stats=None, get_stats=None):
 		"""
-		Class which represents single files or frames on disk.
-		While initializing this object, it can be fed stat values
-		directly or can attempt to call them on the fly by setting
-		get_stats to True.
-
-		When passing data into the stat argument, the object passed
-		in can be either an actual os.stat_result object, a dictionary
-		mapping that matches the sequencer.Stat parameter names, or an
-		iterable of int like items that matches the order of the
-		sequencer.Stat class params in the __init__ method.
-
 		:param str filepath: the absolute filepath of the file
-		:param stats: dict or iterable to map to sequencer.Stat params
-			or os.stat_result object.
-		:param bool get_stats: when True, attempt to call os.stat on the file.
-			If file does not exists, revert back to applying stats values
-			if they were supplied.
+		:param stats: dict or iterable to map Stat class or 
+		              os.stat_result object.
+		:param bool get_stats: True to attempt to call os.stat on
+		                       the file. If file does not exist,
+		                       revert back to applying stats values
+		                       if they were supplied, else set stats
+		                       to None.
 		"""
 		if get_stats is not None and isinstance(get_stats, bool):
 			cfg.get_stats = get_stats
@@ -217,7 +238,7 @@ class File(object):
 
 	@property
 	def frame(self):
-		""" Integer frame number """
+		""" Integer frame number. """
 		try:
 			return int(self._framenum)
 		except ValueError:
@@ -225,12 +246,12 @@ class File(object):
 
 	@property
 	def frame_as_str(self):
-		""" String frame number extracted from original filename """
+		""" Str frame number with padding matching originalvfilename. """
 		return self._framenum
 
 	@property
 	def size(self):
-		""" Stat size of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_size if available, otherwise None. """
 		if not self.stat.st_size:
 			try:
 				self.stat.st_size = os.stat(self.abspath).st_size
@@ -242,7 +263,7 @@ class File(object):
 
 	@property
 	def inode(self):
-		""" Stat inode of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_ino if available, otherwise None. """
 		if not self.stat.st_ino:
 			try:
 				self.stat.st_ino = os.stat(self.abspath).st_ino
@@ -254,7 +275,7 @@ class File(object):
 
 	@property
 	def nlink(self):
-		""" Stat nlink of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_nlink if available, otherwise None. """
 		if not self.stat.st_nlink:
 			try:
 				self.stat.st_nlink = os.stat(self.abspath).st_nlink
@@ -266,7 +287,7 @@ class File(object):
 
 	@property
 	def dev(self):
-		""" Stat dev of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_dev if available, otherwise None. """
 		if not self.stat.st_dev:
 			try:
 				self.stat.st_dev = os.stat(self.abspath).st_dev
@@ -278,7 +299,7 @@ class File(object):
 
 	@property
 	def mode(self):
-		""" Stat mode of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_mode if available, otherwise None. """
 		if not self.stat.st_mode:
 			try:
 				self.stat.st_mode = os.stat(self.abspath).st_mode
@@ -290,7 +311,7 @@ class File(object):
 
 	@property
 	def uid(self):
-		""" Stat uid of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_uid if available, otherwise None. """
 		if not self.stat.st_uid:
 			try:
 				self.stat.st_uid = os.stat(self.abspath).st_uid
@@ -302,7 +323,7 @@ class File(object):
 
 	@property
 	def gid(self):
-		""" Stat gid of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_gid if available, otherwise None. """
 		if not self.stat.st_gid:
 			try:
 				self.stat.st_gid = os.stat(self.abspath).st_gid
@@ -314,7 +335,7 @@ class File(object):
 
 	@property
 	def ctime(self):
-		""" Stat ctime of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_ctime if available, otherwise None. """
 		if not self.stat.st_ctime:
 			try:
 				self.stat.st_ctime = os.stat(self.abspath).st_ctime
@@ -326,7 +347,7 @@ class File(object):
 
 	@property
 	def mtime(self):
-		""" Stat mtime of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_mtime if available, otherwise None. """
 		if not self.stat.st_mtime:
 			try:
 				self.stat.st_mtime = os.stat(self.abspath).st_mtime
@@ -338,7 +359,7 @@ class File(object):
 
 	@property
 	def atime(self):
-		""" Stat atime of file on disk. None if stat not run or supplied. """
+		""" Same as Stat.st_atime if available, otherwise None. """
 		if not self.stat.st_atime:
 			try:
 				self.stat.st_atime = os.stat(self.abspath).st_atime
@@ -350,11 +371,11 @@ class File(object):
 
 	def get_seq_key(self, ignore_padding=None):
 		"""
-		Make sequence name identifier
+		Make a sequence global name for matching frames to correct
+		sequences.
 
-		:param bool ignore_padding: enforce padding
-		:return: sequence name with '#' for frame number if padding ignored
-			or standard padding format '%0#d' where '#' is padding amount.
+		:param bool ignore_padding: True uses '%0#d' format, else '#'
+		:return: sequence key name (i.e. '/path/to/file.#.dpx')
 		"""
 		if ignore_padding is None or not isinstance(ignore_padding, bool):
 			ignore_padding = cfg.ignore_padding
@@ -370,16 +391,19 @@ class File(object):
 
 
 class Sequence(object):
+	"""
+	Class representing a sequence of matching file names. The frames
+	are stored in a dictionary with the frame numbers as keys. Sets
+	are used for fast operations in calculating missing frames.
+	"""
+
 	def __init__(self, file=None, ignore_padding=None):
 		"""
-		Class representing a sequence of matching file names. The frames
-		are stored in a dictionary with the frame numbers as keys. Sets
-		are used for fast operations in calculating missing frames.
-
-		:param file: File object or filename string to base the object
-			instantiation off of.
-		:param bool ignore_padding: Setting to False will disallow
-			new frames from being appended if the frame padding differs.
+		:param file: File object or filename string to initialze a
+		             File object from.
+		:param bool ignore_padding: True to allow inconsistent padding
+		                            as same sequence, False to treat
+		                            as separate sequences.
 		"""
 		if ignore_padding is not None and isinstance(ignore_padding, bool):
 			cfg.ignore_padding = ignore_padding
@@ -422,59 +446,79 @@ class Sequence(object):
 
 	@property
 	def abspath(self):
+		""" full sequence path name (i.e. '/path/to/file.#.dpx') """
 		return self.seq_name
 
 	@property
 	def name(self):
+		""" The base sequence name without the path (i.e 'file.#.dpx') """
 		return os.path.basename(self.seq_name)
 
 	@property
 	def start(self):
-		""" First frame of sequence """
+		""" int of first frame in sequence """
 		return min(self._frames)
 
 	@property
 	def end(self):
-		""" Last frame of sequence """
+		""" int of last frame in sequence """
 		return max(self._frames)
 
 	@property
 	def frames(self):
-		""" Number of total frames actually in sequence """
+		""" int of total frames in sequence """
 		return len(self)
 
 	@property
 	def frame_numbers(self):
+		""" list of frame ints in sequence """
 		return list(sorted(self._frames))
 
 	@property
 	def implied_frames(self):
-		""" Number of expected frames in sequence """
+		""" int of expected frames in sequence """
 		return self.end - self.start + 1
 
 	@property
 	def missing_frames(self):
-		""" Number of missing frames in sequence """
+		""" int of total missing frames in sequence """
 		return self.end - (self.start - 1) - self.frames
 
 	@property
 	def is_missing_frames(self):
-		""" True if non-contiguous portions of the frame numbers """
+		""" return True if any frames are missing from sequence """
 		return self.frames != self.implied_frames
 
 	@property
 	def size(self):
-		""" Sum of all filesizes in sequence if available """
+		""" sum of all filesizes (in bytes) in sequence """
 		try:
 			return sum([file.size for file in self])
 		except TypeError:
 			return
 
 	def get_frame(self, frame):
-		return self._frames[frame]
+		"""
+		Get a specific frame number's File object, works like
+		__getitem__ except gets exact frame number instead of index
+		position in list.
+		
+		:param int frame: frame number to extract from sequence
+		:return: File object
+		"""
+		return self._frames[int(frame)]
 
 	def get_frames(self, start=None, end=None, step=1):
-		"""  """
+		"""
+		Get a specific range of frames' File objects, works like
+		__getitem__ slice, but gets exact frames or frame ranges
+		instead of index positions in list.
+		
+		:param int start: frame number to start range
+		:param int end: frame number to end range
+		:param int step: steps, like range function uses
+		:return: a list of File objects from the given ranges.
+		"""
 		frame_list = []
 		if start is None:
 			return self[:]
@@ -488,13 +532,15 @@ class Sequence(object):
 		return frame_list
 
 	def get_missing_frames(self):
-		""" Get list of frame numbers missing between start and end frame """
+		""" get list of frame numbers missing in sequence """
 		implied = range(self.start, self.end + 1)
 		return [frame for frame in implied if frame not in self._frames]
 
 	def append(self, file):
 		"""
-		Add a new frame to the sequence.
+		Add a new frame to the sequence if it is has a matching
+		sequence key. If it is the first file being added to a new
+		Sequence object, it will set all the Sequence attributes.
 
 		:param file: File object or string to append to Sequence
 		"""
