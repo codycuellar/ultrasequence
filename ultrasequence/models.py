@@ -210,32 +210,30 @@ class File(object):
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __le__(self, other):
-		if isinstance(other, File) \
-				and self.get_seq_key() == other.get_seq_key():
+		if isinstance(other, File):
 			return self.frame <= other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __ge__(self, other):
-		if isinstance(other, File) \
-				and self.get_seq_key() == other.get_seq_key():
+		if isinstance(other, File):
 			return self.frame >= other.frame
 		else:
 			raise TypeError('%s not File instance.' % str(other))
 
 	def __eq__(self, other):
 		if isinstance(other, File):
-			return self.abspath == other.abspath
-		elif isinstance(other, str):
-			return self.abspath == other
+			return (self.head, self.frame, self.tail) == (other.head,
+														  other.frame,
+														  other.tail)
 		else:
 			return False
 
 	def __ne__(self, other):
 		if isinstance(other, File):
-			return self.abspath != other.abspath
-		elif isinstance(other, str):
-			return self.abspath != other
+			return (self.head, self.frame, self.tail) != (other.head,
+														  other.frame,
+														  other.tail)
 		else:
 			return True
 
