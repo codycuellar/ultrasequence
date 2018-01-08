@@ -5,10 +5,6 @@ from ultrasequence import models
 from ultrasequence.config import cfg
 
 
-TEST_SEQUENCES = os.path.join(os.path.dirname(__file__), 'data',
-							  'test_sequencer_regular.txt')
-
-
 class TestExtractFrame(TestCase):
 	def setUp(self):
 		cfg.reset_defaults()
@@ -74,11 +70,60 @@ class TestFrameRangesToString(TestCase):
 		self.assertEqual(result, '[5]')
 
 
+class TestStat(TestCase):
+	def setUp(self):
+		self.stat = models.Stat(1, 2, 3.1, 4.1, 5.1, 6, 7, 8, 9, 10)
+
+	def test_st_size(self):
+		self.assertIsInstance(self.stat.st_size, int)
+		self.assertEqual(self.stat.st_size, 1)
+
+	def test_st_ino(self):
+		self.assertIsInstance(self.stat.st_ino, int)
+		self.assertEqual(self.stat.st_ino, 2)
+
+	def test_st_ctime(self):
+		self.assertIsInstance(self.stat.st_ctime, float)
+		self.assertEqual(self.stat.st_ctime, 3.1)
+
+	def test_st_mtime(self):
+		self.assertIsInstance(self.stat.st_mtime, float)
+		self.assertEqual(self.stat.st_mtime, 4.1)
+
+	def test_st_atime(self):
+		self.assertIsInstance(self.stat.st_atime, float)
+		self.assertEqual(self.stat.st_atime, 5.1)
+
+	def test_st_mode(self):
+		self.assertIsInstance(self.stat.st_mode, int)
+		self.assertEqual(self.stat.st_mode, 6)
+
+	def test_st_dev(self):
+		self.assertIsInstance(self.stat.st_dev, int)
+		self.assertEqual(self.stat.st_dev, 7)
+
+	def test_st_nlink(self):
+		self.assertIsInstance(self.stat.st_nlink, int)
+		self.assertEqual(self.stat.st_nlink, 8)
+
+	def test_st_uid(self):
+		self.assertIsInstance(self.stat.st_uid, int)
+		self.assertEqual(self.stat.st_uid, 9)
+
+	def test_st_gid(self):
+		self.assertIsInstance(self.stat.st_gid, int)
+		self.assertEqual(self.stat.st_gid, 10)
+
+
 class TestFile(TestCase):
 	def setUp(self):
 		cfg.reset_defaults()
+		self.file_10 = models.File('/some/file.10.dpx')
+		self.file_11 = models.File('/some/file.11.dpx')
+		self.file_011 = models.File('/some/file.011.dpx')
+		self.file_012 = models.File('/some/file.012.dpx')
 
-	def test_normal_file_init(self):
+	def test_normal_init(self):
 		_file = models.File('/path/to/file.01000.more.ext')
 		self.assertEqual(_file.abspath, '/path/to/file.01000.more.ext')
 		self.assertEqual(_file.path, '/path/to')
@@ -91,7 +136,7 @@ class TestFile(TestCase):
 		self.assertEqual(_file.tail, '.more.ext')
 		self.assertEqual(_file.padding, 5)
 
-	def test_no_number_file_init(self):
+	def test_no_number_init(self):
 		_file = models.File('/path/to/file.ext')
 		self.assertEqual(_file.abspath, '/path/to/file.ext')
 		self.assertEqual(_file.path, '/path/to')
@@ -104,7 +149,7 @@ class TestFile(TestCase):
 		self.assertEqual(_file.tail, '.ext')
 		self.assertEqual(_file.padding, 0)
 
-	def test_number_only_file_init(self):
+	def test_number_only_init(self):
 		_file = models.File('/path/to/01234.ext')
 		self.assertEqual(_file.abspath, '/path/to/01234.ext')
 		self.assertEqual(_file.path, '/path/to')
@@ -116,7 +161,7 @@ class TestFile(TestCase):
 		self.assertEqual(_file.tail, '.ext')
 		self.assertEqual(_file.padding, 5)
 
-	def test_number_only_no_path_file_init(self):
+	def test_number_only_no_path_init(self):
 		_file = models.File('1234.ext')
 		self.assertEqual(_file.abspath, '1234.ext')
 		self.assertEqual(_file.path, '')
@@ -128,10 +173,10 @@ class TestFile(TestCase):
 		self.assertEqual(_file.tail, '.ext')
 		self.assertEqual(_file.padding, 4)
 
-	def test_file_stat_dict(self):
+	def test_use_stat_dict(self):
 		stats = {
 			'size': 1,
-			'inode': 2,
+			'ino': 2,
 			'nlink': 3,
 			'dev': 4,
 			'mode': 5,
@@ -153,7 +198,7 @@ class TestFile(TestCase):
 		self.assertEqual(_file.ctime, 9)
 		self.assertEqual(_file.atime, 10)
 
-	def test_file_stat_list(self):
+	def test_use_stat_list(self):
 		stats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 		_file = models.File('filename.ext', stats=stats)
 		self.assertIsInstance(_file.stat, models.Stat)
@@ -172,17 +217,77 @@ class TestFile(TestCase):
 		_file = models.File(__file__, os.stat(__file__))
 		self.assertIsInstance(_file.stat, os.stat_result)
 
-	def test_file_get_stat(self):
+	def test_get_stat(self):
 		_file = models.File(__file__, get_stats=True)
 		self.assertIsInstance(_file.stat, os.stat_result)
 
-	def test_file_get_stats_unsuccessful_fallback(self):
+	def test_get_stats_unsuccessful_fallback(self):
 		stats = {'size': 15}
 		_file = models.File('/not/a/file/path.none', stats=stats,
 						   get_stats=True)
 		self.assertIsInstance(_file.stat, models.Stat)
 		self.assertEqual(_file.size, 15)
 		self.assertIsNone(_file.inode)
+
+	def test_get_stats_override_supplied_stats(self):
+		stats = {'size': -15, 'ino': None}
+		_file = models.File(__file__, stats=stats, get_stats=True)
+		self.assertIsInstance(_file.stat, os.stat_result)
+		self.assertNotEqual(_file.size, -15)
+		self.assertIsNotNone(_file.inode)
+
+	def test_lt_same_padding(self):
+		self.assertLess(self.file_10, self.file_11)
+
+	def test_lt_different_padding(self):
+		self.assertLess(self.file_11, self.file_012)
+
+	def test_lt_not_equal(self):
+		self.assertFalse(self.file_10 < self.file_10)
+
+	def test_le_equal(self):
+		self.assertLessEqual(self.file_10, self.file_10)
+
+	def test_le_same_padding(self):
+		self.assertLessEqual(self.file_10, self.file_11)
+
+	def test_le_different_padding(self):
+		self.assertLessEqual(self.file_11, self.file_012)
+
+	def test_gt_same_padding(self):
+		self.assertGreater(self.file_11, self.file_10)
+
+	def test_gt_different_padding(self):
+		self.assertGreater(self.file_012, self.file_11)
+
+	def test_gt_not_equal(self):
+		self.assertFalse(self.file_10 > self.file_10)
+
+	def test_ge_equal(self):
+		self.assertGreaterEqual(self.file_10, self.file_10)
+
+	def test_ge_same_padding(self):
+		self.assertGreaterEqual(self.file_11, self.file_10)
+
+	def test_ge_different_padding(self):
+		self.assertGreaterEqual(self.file_012, self.file_11)
+
+	def test_eq_same_padding(self):
+		self.assertEqual(self.file_11, self.file_11)
+
+	def test_eq_different_padding(self):
+		self.assertEqual(self.file_11, self.file_011)
+
+	def test_eq_different_file_fail(self):
+		other = models.File('/a/different/file.11.exr')
+		self.assertFalse(self.file_11 == other)
+
+	def test_ne_same_basename(self):
+		self.assertNotEqual(self.file_10, self.file_11)
+
+	def test_ne_different_basename_same_number(self):
+		other = models.File('/a/different/file.11.exr')
+		self.assertNotEqual(self.file_11, other)
 
 	def test_get_seq_key_no_padding(self):
 		_file = models.File('/path/to/file.1000.ext')
@@ -274,16 +379,6 @@ class TestSequence(TestCase):
 		self.assertEqual(seq.seq_name, '/path/to/file.%04d.ext')
 		with self.assertRaises(ValueError):
 			seq.append('/path/to/file.00100.ext')
-
-	# def test_contiguous_sequence_frame_range(self):
-	# 	seq = sq.Sequence(self.contiguous[0])
-	# 	[seq.append(x) for x in self.contiguous[1:]]
-	# 	self.assertEqual(seq.start, 100)
-	# 	self.assertEqual(seq.end, 103)
-	# 	self.assertEqual(seq.frames, 4)
-	# 	self.assertEqual(seq.implied_frames, 4)
-	# 	self.assertEqual(seq.missing_frames, 2)
-	# 	self.assertListEqual(seq.get_missing_frames(), [102, 104])
 
 	def test_sequence_size(self):
 		files = [
@@ -403,146 +498,6 @@ class TestSequenceFormatting(TestCase):
 	def test_format_invalid_directive(self):
 		with self.assertRaises(KeyError):
 			self.seq.format('Try%^Fail')
-
-
-# class TestMakeSequences(TestCase):
-#
-# 	def setUp(self):
-# 		with open(TEST_SEQUENCES) as testA:
-# 			self.regular_sequence = [x.rstrip() for x in testA.readlines()]
-#
-# 	def test_make_sequence_returns_three_lists(self):
-# 		results = sq.make_sequences(self.regular_sequence)
-# 		self.assertEqual(len(results), 4)
-# 		for l in results:
-# 			self.assertIsInstance(l, list)
-#
-# 	def test_make_sequences_takes_file_instances(self):
-# 		file1 = sq.File('/path/to/file.100.ext')
-# 		file2 = sq.File('/path/to/file.101.ext')
-# 		file3 = sq.File('/path/to/file.102.ext')
-# 		results = sq.make_sequences([file1, file2, file3])
-# 		self.assertEqual(results[0][0].seq_name, '/path/to/file.#.ext')
-#
-# 	def test_make_sequence_include_exts_works(self):
-# 		ignore_files = [
-# 			'file.10001.mov',
-# 			'file.10002.mov'
-# 		]
-# 		excluded = sq.make_sequences(self.regular_sequence + ignore_files,
-# 									include_exts=['ext', 'dpx'])[2]
-# 		excluded_files = [x.abspath for x in excluded]
-# 		self.assertListEqual(ignore_files, excluded_files)
-#
-# 	def test_make_sequence_returns_proper_instances(self):
-# 		ignore_files = [
-# 			'file.10001.mov',
-# 			'file.10002.mov'
-# 		]
-# 		results = sq.make_sequences(self.regular_sequence + ignore_files,
-# 									include_exts=['ext'])
-# 		sequences, non_sequences, excluded, collisions = results
-# 		for seq in sequences:
-# 			self.assertIsInstance(seq, sq.Sequence)
-# 		for nseq in non_sequences + excluded:
-# 			self.assertIsInstance(nseq, sq.File)
-#
-# 	def test_make_sequence_ignore_padding(self):
-# 		sequences = sq.make_sequences(self.regular_sequence)[0]
-# 		sequence_test = [
-# 			'basic_dot.#.ext',
-# 			'basic_underscore_#.ext',
-# 			'trailing.#.chars.ext',
-# 			'#.ext',
-# 			'no#sep.ext',
-# 			'multiple_nums.#.EXT',
-# 			'2017_#.ext',
-# 			'ab_010_0010_comp_v023.#.dpx',
-# 			'/abs/path/2/basic_dot.#.ext',
-# 			'/abs/path/2/basic_underscore_#.ext',
-# 			'/abs/path/2/trailing.#.chars.ext',
-# 			'/abs/path/2/#.ext',
-# 			'/abs/path/2/no#sep.ext',
-# 			'/abs/path/2/multiple_nums.#.ext',
-# 			'/abs/path/2/2017_#.ext',
-# 			'/abs/path/2/ab_010_0010_comp_v023.#.dpx',
-# 		]
-# 		sequence_test.sort()
-# 		sequence_results = [x.seq_name for x in sequences]
-# 		sequence_results.sort()
-# 		self.assertListEqual(sequence_test, sequence_results)
-#
-# 	def test_make_sequence_force_consistent_padding(self):
-# 		sequences = sq.make_sequences(self.regular_sequence,
-# 									  ignore_padding=False)[0]
-# 		sequence_test = [
-# 			'basic_dot.%01d.ext',
-# 			'basic_dot.%02d.ext',
-# 			'basic_underscore_%01d.ext',
-# 			'trailing.%04d.chars.ext',
-# 			'%04d.ext',
-# 			'no%02dsep.ext',
-# 			'multiple_nums.%03d.EXT',
-# 			'2017_%03d.ext',
-# 			'ab_010_0010_comp_v023.%04d.dpx',
-# 			'/abs/path/2/basic_dot.%01d.ext',
-# 			'/abs/path/2/basic_underscore_%01d.ext',
-# 			'/abs/path/2/trailing.%04d.chars.ext',
-# 			'/abs/path/2/%04d.ext',
-# 			'/abs/path/2/no%02dsep.ext',
-# 			'/abs/path/2/multiple_nums.%03d.ext',
-# 			'/abs/path/2/2017_%03d.ext',
-# 			'/abs/path/2/ab_010_0010_comp_v023.%04d.dpx',
-# 		]
-# 		sequence_test.sort()
-# 		sequence_results = [x.seq_name for x in sequences]
-# 		sequence_results.sort()
-# 		self.assertListEqual(sequence_test, sequence_results)
-#
-# 	def test_make_sequences_non_sequences(self):
-# 		non_sequences = sq.make_sequences(self.regular_sequence)[1]
-# 		sequence_test = [
-# 			'no_digits.ext',
-# 			'no_sequence_2017.ext',
-# 			'/abs/path/2/no_digits.ext',
-# 			'/abs/path/2/no_sequence_2017.ext',
-# 		]
-# 		sequence_test.sort()
-# 		sequence_results = [x.abspath for x in non_sequences]
-# 		sequence_results.sort()
-# 		self.assertListEqual(sequence_test, sequence_results)
-#
-# 	def test_make_sequence_handles_index_collision(self):
-# 		files = [
-# 			'/abs/path/to/file.101.ext',
-# 			'/abs/path/to/file.102.ext',
-# 			'/abs/path/to/file.103.ext',
-# 			'/abs/path/to/file.0101.ext',
-# 		]
-# 		collisions = sq.make_sequences(files)[3]
-# 		collision_names = [x.abspath for x in collisions]
-# 		self.assertListEqual(['/abs/path/to/file.0101.ext'], collision_names)
-#
-# 	def test_make_sequence_stats_as_dict(self):
-# 		files = [
-# 			('file.0.ext', {'size': 10}),
-# 			('file.1.ext', {'size': 10}),
-# 			('file.2.ext', {'size': 10}),
-# 		]
-# 		sequences = sq.make_sequences(files)[0]
-# 		for frame in sequences[0]:
-# 			self.assertEqual(frame.size, 10)
-#
-# 	def test_make_sequence_stats_as_list(self):
-# 		files = [
-# 			('file.0.ext', [10, 20]),
-# 			('file.1.ext', [10, 20]),
-# 			('file.2.ext', [10, 20]),
-# 		]
-# 		sequences = sq.make_sequences(files)[0]
-# 		for frame in sequences[0]:
-# 			self.assertEqual(frame.size, 10)
-# 			self.assertEqual(frame.inode, 20)
 
 
 if __name__ == '__main__':
