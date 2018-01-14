@@ -169,7 +169,7 @@ class Parser(object):
 			logger.warning('%s is not an available directory.' % directory)
 
 	def parse_file(self, filepath, csv=cfg.csv, csv_sep=cfg.csv_sep,
-				   stat_order=cfg.stat_order):
+				   stat_order=cfg.stat_order, date_format=cfg.date_format):
 		"""
 		Parse a text csv or text file containing file listings.
 

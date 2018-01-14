@@ -20,6 +20,7 @@ class Config(object):
 				'stat_order': '',
 				'csv': 'false',
 				'csv_sep': r'\t',
+				'date_format': '%a %b %d %H:%M:%S %Y',
 			},
 			'regex': {
 				'frame_extract': r'((.*)(\D))?(\d+)(.*)',
