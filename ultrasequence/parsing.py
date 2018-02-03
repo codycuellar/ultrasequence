@@ -162,31 +162,31 @@ class Parser(object):
 		else:
 			logger.warning('%s is not an available directory.' % directory)
 
-	def parse_file(self, filepath, csv=cfg.csv, csv_sep=cfg.csv_sep,
+	def parse_file(self, listfile, csv=cfg.csv, csv_sep=cfg.csv_sep,
 				   stat_order=cfg.stat_order, date_format=cfg.date_format):
 		"""
 		Parse a text csv or text file containing file listings.
 
-		:param str filepath: 
+		:param str listfile: 
 		:param bool csv: 
 		:param str csv_sep: 
 		:param list stat_order: 
 		:return: 
 		"""
-		# Test is stat_order strings are valid
+		# Test if stat_order strings are valid
 		Stat(dict((x, None) for x in stat_order))
 
-		filepath = os.path.expanduser(filepath)
+		listfile = os.path.expanduser(listfile)
 
 		self._reset()
-		if isinstance(filepath, str) and os.path.isfile(filepath):
-			with open(filepath, 'r') as file_list:
+		if isinstance(listfile, str) and os.path.isfile(listfile):
+			with open(listfile, 'r') as file_list:
 				for file_ in file_list:
 					if csv:
 						file_ = file_.rstrip().split(csv_sep)
 						filename = file_[0]
 						if cfg.get_stats:
-							stats = map_stats(stat_order, file_[1:])
+							stats = dict(zip(stat_order, file_[1:]))
 							self._sort_file(filename, stats)
 						else:
 							self._sort_file(filename)
@@ -194,7 +194,7 @@ class Parser(object):
 						self._sort_file(file_.rstrip())
 			self._cleanup()
 		else:
-			logger.warning('%s is not a valid filepath.' % filepath)
+			logger.warning('%s is not a valid filepath.' % listfile)
 
 	# def parse_list(self, file_list):
 	# 	"""
