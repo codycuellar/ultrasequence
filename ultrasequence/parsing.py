@@ -22,10 +22,28 @@ if sys.version_info < (3, 5):
 		from scandir import walk
 	except ImportError:
 		logger.info('For Python versions < 3.5, scandir module is '
-					'recommended. Run >>> pip install scandir')
+					'recommended. Run \n>>> pip install scandir')
 
 
-def get_files_in_dir(root, files):
+def scan_dir(path):
+	"""
+	Searches a root directory and returns a list of all files. If 
+	cfg.recurse is True, the scanner will descend all child directories.
+
+	:param path: The root path to scan for files
+	:return: a list of filenames if cfg.get_stats is False, or a list
+			 of tuples (filename, file_stats) if cfg.get_stats is True.
+	"""
+	file_list = []
+	if cfg.recurse:
+		for root, dirs, files in walk(path):
+			file_list += stat_files(root, files)
+	else:
+		file_list += stat_files(path, os.listdir(path))
+	return file_list
+
+
+def stat_files(root, files):
 	"""
 	Assembles a list of files for a single directory.
 
@@ -45,30 +63,6 @@ def get_files_in_dir(root, files):
 		dir_list += [os.path.join(root, file) for file in files
 					 if os.path.isfile(os.path.join(root, file))]
 	return dir_list
-
-
-def get_files_in_directory(path):
-	"""
-	Searches a root directory and returns a list of all files. If 
-	cfg.recurse is True, the scanner will descend all child directories.
-
-	:param path: The root path to scan for files
-	:return: a list of filenames if cfg.get_stats is False, or a list
-			 of tuples (filename, file_stats) if cfg.get_stats is True.
-	"""
-	file_list = []
-	if cfg.recurse:
-		for root, dirs, files in walk(path):
-			file_list += get_files_in_dir(root, files)
-	else:
-		file_list += get_files_in_dir(path, os.listdir(path))
-	return file_list
-
-
-def map_stats(stat_order, stats):
-	if not len(stat_order) == len(stats):
-		raise ValueError('Stat order and stats not the same length.')
-	return dict(zip(stat_order, stats))
 
 
 class Parser(object):
