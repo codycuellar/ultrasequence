@@ -58,6 +58,7 @@ class Config(object):
 
 	def _load_config(self, cfgparser):
 		self.format = cfgparser.get('global', 'format')
+		self.date_format = cfgparser.get('global', 'date_format')
 		self.recurse = cfgparser.getboolean('global', 'recurse')
 		self.ignore_padding = cfgparser.getboolean('global', 'ignore_padding')
 		self.include_exts = cfgparser.get('global', 'include_exts').split()
