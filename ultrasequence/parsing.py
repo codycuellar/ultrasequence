@@ -119,8 +119,8 @@ class Parser(object):
 				self.sequences.append(seq)
 		self.parsed = True
 
-	def _sort_file(self, file_, stats=None):
-		file_ = File(file_, stats=stats)
+	def _sort_file(self, filepath, stats=None):
+		file_ = File(filepath, stats=stats)
 
 		if self.include_exts and file_.ext.lower() not in self.include_exts \
 				or file_.ext.lower() in self.exclude_exts:
@@ -151,7 +151,7 @@ class Parser(object):
 		cfg.recurse = recurse
 		directory = os.path.expanduser(directory)
 		if isinstance(directory, str) and os.path.isdir(directory):
-			file_list = get_files_in_directory(directory)
+			file_list = scan_dir(directory)
 			while file_list:  # reduce memory consumption for large lists
 				file_ = file_list.pop(0)
 				if cfg.get_stats:
