@@ -1,6 +1,6 @@
 ## General
 .idea/
-us_venv/
+*_venv/
 
 
 ### Python template
