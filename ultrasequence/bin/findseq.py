@@ -37,7 +37,7 @@ def get_args():
 						version='%s v%s' % (NAME, __version__)
 						)
 
-	parser.add_argument('--make-user-cfg',
+	parser.add_argument('--make-config',
 						action=UserConfig,
 						)
 

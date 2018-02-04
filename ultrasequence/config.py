@@ -25,7 +25,7 @@ class Config(object):
 				'tail_group': 4,
 			}
 		}
-		self.user_config_file = os.path.expanduser('~/.findseq.conf')
+		self.user_config_file = os.path.expanduser('~/.ultrasequence.conf')
 		self.default_parser = configparser.RawConfigParser()
 
 		if PYTHON_VERSION == 3:
