@@ -476,19 +476,19 @@ class Sequence(object):
 		return list(sorted(self._frames))
 
 	@property
-	def implied_frames(self):
+	def frame_range(self):
 		""" int of expected frames in sequence """
 		return self.end - self.start + 1
 
 	@property
-	def missing_frames(self):
+	def missing(self):
 		""" int of total missing frames in sequence """
 		return self.end - (self.start - 1) - self.frames
 
 	@property
 	def is_missing_frames(self):
 		""" return True if any frames are missing from sequence """
-		return self.frames != self.implied_frames
+		return self.frames != self.frame_range
 
 	@property
 	def size(self):
@@ -682,7 +682,7 @@ class Sequence(object):
 
 	def __num_missing_frames(self):
 		""" Internal formatter method """
-		return str(self.missing_frames)
+		return str(self.missing)
 
 	def __explicit_missing_range(self):
 		""" Internal formatter method """

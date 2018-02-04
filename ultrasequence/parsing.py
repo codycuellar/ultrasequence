@@ -8,7 +8,7 @@ in any Parser list.
 """
 
 from .config import cfg
-from ultrasequence import File, Sequence, Stat
+from ultrasequence import File, Sequence
 import os
 from os import walk
 import sys
