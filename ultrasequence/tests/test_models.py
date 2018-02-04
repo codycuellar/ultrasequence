@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import TestCase
 from ultrasequence import models
-from ultrasequence import cfg
+from ultrasequence.config import cfg
 
 
 class TestExtractFrame(TestCase):

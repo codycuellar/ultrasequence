@@ -2,8 +2,8 @@ import unittest
 import os
 from unittest import TestCase
 from unittest.mock import patch
-from ultrasequence import cfg
 from ultrasequence import parsing
+from ultrasequence.config import cfg
 
 
 def stat_mock(root, files):
