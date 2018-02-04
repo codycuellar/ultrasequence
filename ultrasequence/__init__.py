@@ -48,10 +48,3 @@ stats from the file system if you do have access to the files.
 This module provides direct access to the File, Sequence, and Stat
 models, as well as the Parser class and the cfg object.
 """
-
-from .version import __version__
-from .models import File, Sequence, Stat
-from .parsing import Parser
-from .config import cfg
-
-__all__ = [File, Sequence, Stat, Parser, cfg]

@@ -1,7 +1,7 @@
-from .config import cfg
+import logging
 import os
 import re
-import logging
+from .config import cfg
 
 try:
 	FileNotFoundError

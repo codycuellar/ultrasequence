@@ -7,12 +7,12 @@ Currently, the directory scanner skips any links and they will not show up
 in any Parser list.
 """
 
-from .config import cfg
-from ultrasequence import File, Sequence
-import os
-from os import walk
-import sys
 import logging
+import os
+import sys
+from os import walk
+from ultrasequence.config import cfg
+from ultrasequence.models import File, Sequence
 
 
 logger = logging.getLogger()

@@ -1,7 +1,6 @@
 import argparse
 import os
 import ultrasequence as us
-from ultrasequence import config
 from ultrasequence.config import cfg
 from ultrasequence.version import __version__, NAME
 
