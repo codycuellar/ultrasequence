@@ -1,7 +1,7 @@
 import argparse
 import os
-import ultrasequence as us
 from ultrasequence.config import cfg
+from ultrasequence.parsing import Parser
 from ultrasequence.version import __version__, NAME
 
 
@@ -100,10 +100,10 @@ def main():
 	if args.strict_padding:
 		cfg.ignore_padding = False
 
-	parser = us.Parser(include_exts=cfg.include_exts,
-					   exclude_exts=cfg.exclude_exts,
-					   get_stats=cfg.get_stats,
-					   ignore_padding=cfg.ignore_padding)
+	parser = Parser(include_exts=cfg.include_exts,
+					exclude_exts=cfg.exclude_exts,
+					get_stats=cfg.get_stats,
+					ignore_padding=cfg.ignore_padding)
 
 	if os.path.isdir(args.source):
 		parser.parse_directory(args.source, recurse=cfg.recurse)
