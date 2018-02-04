@@ -110,8 +110,8 @@ def main():
 	elif os.path.isfile(os.path.expanduser(args.source)):
 		parser.parse_file(args.source)
 
-	output = parser.sequences + parser.single_frames + parser.non_sequences + \
-			 parser.collisions + parser.excluded
+	output = parser.sequences + parser.single_frames + \
+			 parser.non_sequences + parser.collisions
 	output.sort(key=lambda s: s.abspath.lower())
 
 	for x in output:
