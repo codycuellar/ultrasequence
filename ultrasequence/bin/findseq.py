@@ -10,13 +10,13 @@ class UserConfig(argparse.Action):
 				 option_strings,
 				 dest=argparse.SUPPRESS,
 				 default=argparse.SUPPRESS,
-				 help="make a local config file in user home dir and exit"):
+				 help_="make a local config file in user home dir and exit"):
 		super(UserConfig, self).__init__(
 			option_strings=option_strings,
 			dest=dest,
 			default=default,
 			nargs=0,
-			help=help)
+			help=help_)
 
 	def __call__(self, parser, namespace, values, option_string=None):
 		cfg.write_user_config()
@@ -112,7 +112,7 @@ def main():
 
 	output = parser.sequences + parser.single_frames + parser.non_sequences + \
 			 parser.collisions + parser.excluded
-	output.sort(key=lambda x: x.abspath.lower())
+	output.sort(key=lambda s: s.abspath.lower())
 
 	for x in output:
 		print(x)
