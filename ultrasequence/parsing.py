@@ -70,11 +70,14 @@ class Parser(object):
 				 exclude_exts=cfg.exclude_exts, get_stats=cfg.get_stats,
 				 ignore_padding=cfg.ignore_padding):
 		"""
+		Main parser object. Sets up config parameters for parsing methods.
 		
-		:param list include_exts: 
-		:param list exclude_exts: 
-		:param bool get_stats: 
-		:param bool ignore_padding: 
+		:param list include_exts: file extensions to include in parsing
+		:param list exclude_exts: file extensinos to explicity exclude in
+		                          parsing
+		:param bool get_stats: get file stats from os.stats
+		:param bool ignore_padding: ignore the number of digits in the
+		                            file's frame number section
 		"""
 		if not include_exts or not isinstance(include_exts, (tuple, list)):
 			self.include_exts = set()
@@ -91,6 +94,7 @@ class Parser(object):
 		self._reset()
 
 	def _reset(self):
+		""" Clear all parser results """
 		self._sequences = {}
 		self.sequences = []
 		self.single_frames = []
@@ -111,6 +115,7 @@ class Parser(object):
 				(hex(id(self)), self.parsed))
 
 	def _cleanup(self):
+		""" Moves single frames out of sequences list """
 		while self._sequences:
 			seq = self._sequences.popitem()[1]
 			if seq.frames == 1:
@@ -120,6 +125,7 @@ class Parser(object):
 		self.parsed = True
 
 	def _sort_file(self, filepath, stats=None):
+		""" Finds matching sequence for given filepath """
 		file_ = File(filepath, stats=stats)
 
 		if self.include_exts and file_.ext.lower() not in self.include_exts \
@@ -143,9 +149,8 @@ class Parser(object):
 		"""
 		Parse a directory on the file system.
 
-		:param str directory:
-		:param bool recurse:
-		:return:
+		:param str directory: directory path to scan on filesystem
+		:param bool recurse: recurse all child directories
 		"""
 		self._reset()
 		cfg.recurse = recurse
@@ -166,11 +171,7 @@ class Parser(object):
 		"""
 		Parse a text file containing file listings.
 
-		:param str listfile: 
-		:param bool csv: 
-		:param str csv_sep: 
-		:param list stat_order: 
-		:return: 
+		:param str listfile: path to the file containing a file listing
 		"""
 		listfile = os.path.expanduser(listfile)
 

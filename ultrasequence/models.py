@@ -105,7 +105,7 @@ class Stat(object):
 		Refer to the docs for the the built-in os.stat module for more info.
 		
 		:param int size: File size in bytes
-		:param int inode: Inode number
+		:param int ino: Inode number
 		:param float ctime: Unix change timestamp
 		:param float mtime: Unix modify timestamp
 		:param float atime: Unix access timestamp
