@@ -4,7 +4,7 @@ ULTRASEQUENCE
 =============
 ** An ultra-fast file sequencing tool. **
 
-© 2017 Cody Cuellar
+©2018 Cody Cuellar
 cody.cuellar@gmail.com
 
 License: MIT
