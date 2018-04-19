@@ -12,16 +12,16 @@ from ultrasequence.config import CONFIG as cfg
 from ultrasequence.models import File, Sequence
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 if sys.version_info < (3, 5):
 	try:
 		from scandir import walk
 	except ImportError:
-		logger.info('For Python versions < 3.5, scandir module is '
-					'recommended for faster directory parsing. Run '
-		            '\n>>> pip install scandir')
+		logger.warning('For Python versions < 3.5, scandir module is '
+		               'recommended for faster directory parsing. Run:'
+		               '\n>>> pip install scandir')
 
 
 def scan_dir(path):

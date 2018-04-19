@@ -11,7 +11,7 @@ GLOBALS
 CONFIG
 
 """
-
+import logging
 try:
 	import configparser
 	PYTHON_VERSION = 3
@@ -19,6 +19,10 @@ except ImportError:
 	import ConfigParser as configparser
 	PYTHON_VERSION = 2
 import os
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logging.basicConfig()
 
 
 class UsConfig(object):

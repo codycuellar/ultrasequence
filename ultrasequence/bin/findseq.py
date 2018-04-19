@@ -18,10 +18,14 @@ user puts no options on the command line, all the values from the local config
 file will be used.
 """
 import argparse
+import logging
 import os
 from ultrasequence.config import CONFIG as cfg
 from ultrasequence.parsing import Parser
 from ultrasequence.version import __version__, NAME
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserConfig(argparse.Action):
