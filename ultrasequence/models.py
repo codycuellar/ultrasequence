@@ -1,7 +1,13 @@
+"""
+CORE DATA MODELS
+================
+Contains the core data structure models for sequencing files.
+"""
+
 import logging
 import os
 import re
-from .config import cfg
+from .config import CONFIG as cfg
 
 try:
 	FileNotFoundError
@@ -16,18 +22,15 @@ def extract_frame(name):
 	"""
 	This function by default extracts the last set of digits in the
 	string name and assumes it is the frame number when returning the
-	parts.
-
-	It's a good idea to only pass basenames without extenions so it 
-	doesn't attempt to sequence directory names or digits in the
+	parts. It's a good idea to only pass basenames without extensions
+	so it doesn't attempt to sequence directory names or digits in the
 	extension.
 
-	:param str name: file basename without dir or extension
-	
+	:param str name: File basename without dir or extension.
 	:return: 3-pair tuple consisting of the head (all characters
-			 preceding the last set of digits), the frame number
-			 (last set of digits), and tail (all digits succeeding
-			 the frame number).
+	         preceding the last set of digits), the frame number
+	         (last set of digits), and tail (all digits succeeding
+	         the frame number).
 	"""
 	frame_match = re.match(cfg.frame_extract_re, name)
 	if frame_match:
@@ -46,10 +49,9 @@ def split_extension(filename):
 	Splits the extension off the filename and returns a tuple of the
 	base filename and the extension (without the dot).
 	
-	:param str filename: the base filename string to split
-	
-	:return: a tuple of the head (characters before the last .) and
-			 the extension (characters after the last .)
+	:param str filename: The base filename string to split.
+	:return: A tuple of the head (characters before the last '.') and
+			 the extension (characters after the last '.').
 	"""
 	parts = filename.split('.')
 	if len(parts) < 2:
@@ -59,40 +61,44 @@ def split_extension(filename):
 	return head, ext
 
 
-def frame_ranges_to_string(frame_list):
+def frame_ranges_to_string(frames):
 	"""
-	Take a flat list of ordered numbers and make a string
-	representation of the ranges.
+	Take a list of numbers and make a string representation of the ranges.
 
-	:param iterable frame_list: sorted list of frame numbers
-	
-	:return: string of broken frame ranges (i.e '[10-14, 16, 20-25]')
+	>>> frame_ranges_to_string([1, 2, 3, 6, 7, 8, 9, 13, 15])
+	'[1-3, 6-9, 13, 15]'
+
+	:param list frames: Sorted list of frame numbers.
+	:return: String of broken frame ranges (i.e '[10-14, 16, 20-25]').
 	"""
-	if not frame_list:
+	if not frames:
 		return '[]'
-	if not isinstance(frame_list, list):
-		frame_list = list(frame_list)
-	ranges = [[frame_list.pop(0)]]
-	range_i = 0
-	for x in frame_list:
-		if x - 1 == ranges[range_i][-1]:
-			ranges[range_i].append(x)
+	if not isinstance(frames, list):
+		frames = list(frames)
+	frames.sort()
+
+	# Make list of lists for each consecutive range
+	ranges = [[frames.pop(0)]]
+	current_range_index = 0  # index of current range
+	for x in frames:
+		if x - 1 == ranges[current_range_index][-1]:
+			ranges[current_range_index].append(x)
 		else:
-			range_i += 1
+			current_range_index += 1
 			ranges.append([x])
-	list_of_ranges = []
+	range_strings = []
 	for x in ranges:
 		if len(x) > 1:
-			list_of_ranges.append('-'.join([str(x[0]), str(x[-1])]))
+			range_strings.append('-'.join([str(x[0]), str(x[-1])]))
 		else:
-			list_of_ranges.append(str(x[0]))
-	complete_string = '[' + ', '.join(list_of_ranges) + ']'
+			range_strings.append(str(x[0]))
+	complete_string = '[' + ', '.join(range_strings) + ']'
 	return complete_string
 
 
 class Stat(object):
 	"""
-	This class mocks object returned by os.stat on Unix platforms.
+	This class mocks objects returned by os.stat on Unix platforms.
 	This is useful for instance when working with offline lists where 
 	you want to maintain the stat information from a previously parsed
 	directory which the current machine does not have access to.
@@ -104,11 +110,11 @@ class Stat(object):
 		"""
 		Refer to the docs for the the built-in os.stat module for more info.
 		
-		:param int size: File size in bytes
-		:param int ino: Inode number
-		:param float ctime: Unix change timestamp
-		:param float mtime: Unix modify timestamp
-		:param float atime: Unix access timestamp
+		:param int size: File size in bytes.
+		:param int ino: Inode number.
+		:param float ctime: Unix change timestamp.
+		:param float mtime: Unix modify timestamp.
+		:param float atime: Unix access timestamp.
 		:param int mode: Inode protection mode.
 		:param int dev: Device inode resides on.
 		:param int nlink: Number of links to the inode.
@@ -149,6 +155,8 @@ class File(object):
 
 	def __init__(self, filepath, stats=None, get_stats=None):
 		"""
+		Initalize a single File instance.
+
 		:param str filepath: the absolute filepath of the file
 		:param stats: dict or iterable to map Stat class or 
 		              os.stat_result object.
@@ -247,7 +255,7 @@ class File(object):
 
 	@property
 	def frame_as_str(self):
-		""" Str frame number with padding matching originalvfilename. """
+		""" Str frame number with padding matching original filename. """
 		return self._framenum
 
 	@property
@@ -396,12 +404,19 @@ class Sequence(object):
 	Class representing a sequence of matching file names. The frames
 	are stored in a dictionary with the frame numbers as keys. Sets
 	are used for fast operations in calculating missing frames.
+
+	This class's usage of dictionaries and sets is the core of the
+	speed of this program. Rather than recursively searching existing
+	sequences, the file key gnerated from File.get_seq_key() is used to
+	instantly match the sequence it belongs to.
 	"""
 
-	def __init__(self, file=None, ignore_padding=None):
+	def __init__(self, frame_file=None, ignore_padding=None):
 		"""
-		:param file: File object or filename string to initialze a
-		             File object from.
+		Initialize an image Sequence instance.
+
+		:param File or str frame_file: File object or filename string to
+		                         initialze a File object from.
 		:param bool ignore_padding: True to allow inconsistent padding
 		                            as same sequence, False to treat
 		                            as separate sequences.
@@ -417,8 +432,8 @@ class Sequence(object):
 		self.ext = ''
 		self.padding = 0
 		self.inconsistent_padding = False
-		if file is not None:
-			self.append(file)
+		if frame_file is not None:
+			self.append(frame_file)
 
 	def __str__(self):
 		return self.format(cfg.format)
@@ -447,54 +462,54 @@ class Sequence(object):
 
 	@property
 	def abspath(self):
-		""" full sequence path name (i.e. '/path/to/file.#.dpx') """
+		""" Full sequence path name (i.e. '/path/to/file.#.dpx'). """
 		return self.seq_name
 
 	@property
 	def name(self):
-		""" The base sequence name without the path (i.e 'file.#.dpx') """
+		""" The base sequence name without the path (i.e 'file.#.dpx'). """
 		return os.path.basename(self.seq_name)
 
 	@property
 	def start(self):
-		""" int of first frame in sequence """
+		""" Int of first frame in sequence. """
 		return min(self._frames)
 
 	@property
 	def end(self):
-		""" int of last frame in sequence """
+		""" Int of last frame in sequence. """
 		return max(self._frames)
 
 	@property
 	def frames(self):
-		""" int of total frames in sequence """
+		""" Int of total frames in sequence. """
 		return len(self)
 
 	@property
 	def frame_numbers(self):
-		""" list of frame ints in sequence """
+		""" List of frame ints in sequence. """
 		return list(sorted(self._frames))
 
 	@property
 	def frame_range(self):
-		""" int of expected frames in sequence """
+		""" Int of expected frames in sequence. """
 		return self.end - self.start + 1
 
 	@property
 	def missing(self):
-		""" int of total missing frames in sequence """
+		""" Int of total missing frames in sequence. """
 		return self.end - (self.start - 1) - self.frames
 
 	@property
 	def is_missing_frames(self):
-		""" return True if any frames are missing from sequence """
+		""" Return True if any frames are missing from sequence. """
 		return self.frames != self.frame_range
 
 	@property
 	def size(self):
-		""" sum of all filesizes (in bytes) in sequence """
+		""" Sum of all filesizes (in bytes) in sequence. """
 		try:
-			return sum([file.size for file in self])
+			return sum([file_.size for file_ in self])
 		except TypeError:
 			return
 
@@ -504,8 +519,8 @@ class Sequence(object):
 		__getitem__ except gets exact frame number instead of index
 		position in list.
 		
-		:param int frame: frame number to extract from sequence
-		:return: File object
+		:param int frame: Frame number to extract from sequence.
+		:return: File instance.
 		"""
 		return self._frames[int(frame)]
 
@@ -515,10 +530,10 @@ class Sequence(object):
 		__getitem__ slice, but gets exact frames or frame ranges
 		instead of index positions in list.
 		
-		:param int start: frame number to start range
-		:param int end: frame number to end range
-		:param int step: steps, like range function uses
-		:return: a list of File objects from the given ranges.
+		:param int start: Frame number to start range.
+		:param int end: Frame number to end range.
+		:param int step: Steps, like range function uses.
+		:return: A list of File objects from the given ranges.
 		"""
 		frame_list = []
 		if start is None:
@@ -533,89 +548,91 @@ class Sequence(object):
 		return frame_list
 
 	def get_missing_frames(self):
-		""" get list of frame numbers missing in sequence """
+		""" Get list of frame numbers missing in sequence. """
 		implied = range(self.start, self.end + 1)
 		return [frame for frame in implied if frame not in self._frames]
 
-	def append(self, file):
+	def append(self, frame_file):
 		"""
 		Add a new frame to the sequence if it is has a matching
 		sequence key. If it is the first file being added to a new
 		Sequence object, it will set all the Sequence attributes.
 
-		:param file: File object or string to append to Sequence
+		:param frame_file: File instance or string to append to Sequence.
 		"""
-		if not isinstance(file, File):
-			if isinstance(file, str):
-				file = File(file)
-				if len(self._frames) > 0 and file.get_seq_key(
+		if not isinstance(frame_file, File):
+			if isinstance(frame_file, str):
+				frame_file = File(frame_file)
+				if len(self._frames) > 0 and frame_file.get_seq_key(
 						cfg.ignore_padding) != self.seq_name:
 					raise ValueError('%s is not a member of %s. Not appending.'
-									 % (file, repr(self)))
-		if file.frame is None:
-			raise ValueError('%s can not be sequenced.' % str(file))
+					                 % (frame_file, repr(self)))
+		if frame_file.frame is None:
+			raise ValueError('%s can not be sequenced.' % str(frame_file))
 		if not self.frames:
-			self.namehead = file.namehead
-			self.path = file.path
-			self.head = file.head
-			self.tail = file.tail
-			self.ext = file.ext
-			self.padding = file.padding
-			self.seq_name = file.get_seq_key(cfg.ignore_padding)
-		elif file.frame in self._frames:
-			raise IndexError('%s already in sequence as %s' %
-							 (file.name, self._frames[file.frame]))
-		elif self.padding < file.padding:
+			self.namehead = frame_file.namehead
+			self.path = frame_file.path
+			self.head = frame_file.head
+			self.tail = frame_file.tail
+			self.ext = frame_file.ext
+			self.padding = frame_file.padding
+			self.seq_name = frame_file.get_seq_key(cfg.ignore_padding)
+		elif frame_file.frame in self._frames:
+			raise IndexError(
+				'%s already in sequence as %s' % (
+					frame_file.name, self._frames[frame_file.frame]))
+		elif self.padding < frame_file.padding:
 			self.inconsistent_padding = True
-			self.padding = file.padding
-		self._frames[file.frame] = file
+			self.padding = frame_file.padding
+		self._frames[frame_file.frame] = frame_file
 
-	def format(self, format=cfg.format):
+	def format(self, str_format=cfg.format):
 		"""
 		This formatter will replace any of the formatting directives
 		found in the format argument with it's string part. It will try
 		to format any character after a % sign, so in order to use a
 		literal %, it must be escaped with another % - '%%'.
 
-		 --------------------------------------------------------------------
-		|  SAMPLE NAME:   '/path/to/file_name.0101.final.ext'
-		 --------------------------------------------------------------------
+		+-------------------------------------------------------------------+
+		| SAMPLE NAME:   '/path/to/file_name.0101.final.ext'                |
+		+-------------------------------------------------------------------+
 
-		  FMT     DESCRIPTION                      EXAMPLE
-		 --------------------------------------------------------------------
-		| '%%' |  literal '%' sign               |  '%'
-		|--------------------------------------------------------------------
-		| '%p' |  pathname                       |  '/path/to'
-		|--------------------------------------------------------------------
-		| '%h' |  head chars of filename         |  'file_name.'
-		|--------------------------------------------------------------------
-		| '%H' |  all chars preceeding frame #   |  '/path/to/file_name.'
-		|--------------------------------------------------------------------
-		| '%f' |  number of actual frames        |  '42'
-		|--------------------------------------------------------------------
-		| '%r' |  implied frame range            |  '[0101-0150]'
-		|--------------------------------------------------------------------
-		| '%R' |  broken explicit frame range    |  '[101-140, 148, 150]'
-		|      |  ignores padding                |
-		|--------------------------------------------------------------------
-		| '%m' |  total number of missing frames |  '8'
-		|--------------------------------------------------------------------
-		| '%M' |  broken explicit missing ranges |  '[141-147, 149]'
-		|      |  ignores padding                |
-		|--------------------------------------------------------------------
-		| '%D' |  '#' digits denoting padding    |  '####'
-		|--------------------------------------------------------------------
-		| '%P' |  '%' style padding              |  '%04d'
-		|--------------------------------------------------------------------
-		| '%t' |  tail chars after frame, no ext |  '.final'
-		|--------------------------------------------------------------------
-		| '%T' |  all tail chars after frame     |  '.final.ext'
-		|--------------------------------------------------------------------
-		| '%e' |  extension without dot          |  'ext'
-		 --------------------------------------------------------------------
+		+------+---------------------------------+--------------------------+
+		| FMT  |  DESCRIPTION                    | EXAMPLE                  |
+		+------+---------------------------------+--------------------------+
+		| '%%' |  literal '%' sign               |  '%'                     |
+		+------+---------------------------------+--------------------------+
+		| '%p' |  pathname                       |  '/path/to'              |
+		+------+---------------------------------+--------------------------+
+		| '%h' |  head chars of filename         |  'file_name.'            |
+		+------+---------------------------------+--------------------------+
+		| '%H' |  all chars preceeding frame #   |  '/path/to/file_name.'   |
+		+------+---------------------------------+--------------------------+
+		| '%f' |  number of actual frames        |  '42'                    |
+		+------+---------------------------------+--------------------------+
+		| '%r' |  implied frame range            |  '[0101-0150]'           |
+		+------+---------------------------------+--------------------------+
+		| '%R' |  broken explicit frame range    |  '[101-140, 148, 150]'   |
+		|      |  ignores padding                |                          |
+		+------+---------------------------------+--------------------------+
+		| '%m' |  total number of missing frames |  '8'                     |
+		+------+---------------------------------+--------------------------+
+		| '%M' |  broken explicit missing ranges |  '[141-147, 149]'        |
+		|      |  ignores padding                |                          |
+		+------+---------------------------------+--------------------------+
+		| '%D' |  '#' digits denoting padding    |  '####'                  |
+		+------+---------------------------------+--------------------------+
+		| '%P' |  '%' style padding              |  '%04d'                  |
+		+------+---------------------------------+--------------------------+
+		| '%t' |  tail chars after frame, no ext |  '.final'                |
+		+------+---------------------------------+--------------------------+
+		| '%T' |  all tail chars after frame     |  '.final.ext'            |
+		+------+---------------------------------+--------------------------+
+		| '%e' |  extension without dot          |  'ext'                   |
+		+------+---------------------------------+--------------------------+
 
-		:param format: the string directive for the formatter to convert
-		:return: the formatted string
+		:param str_format: The string directive for the formatter to convert.
+		:return: The formatted sequence string.
 		"""
 
 		# Call functions to minimize processes run during formatter execution.
@@ -634,12 +651,12 @@ class Sequence(object):
 			'%t': self.__tail_without_ext,
 			'%T': self.__tail,
 			'%e': self.__ext,
-		}
-		format = [c for c in format]
+			}
+		str_format = [c for c in str_format]
 		new_string = ''
 
 		matched = False
-		for char in format:
+		for char in str_format:
 			if matched:
 				new_string += directive_mapper['%' + char]()
 				matched = False
@@ -651,7 +668,8 @@ class Sequence(object):
 				new_string += char
 		return new_string
 
-	def __pct(self):
+	@staticmethod
+	def __pct():
 		""" Internal formatter method """
 		return '%'
 

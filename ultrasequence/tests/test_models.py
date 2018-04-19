@@ -2,12 +2,12 @@ import os
 import unittest
 from unittest import TestCase
 from ultrasequence import models
-from ultrasequence.config import cfg
+from ultrasequence.config import CONFIG
 
 
 class TestExtractFrame(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 
 	def test_frame_name(self):
 		result = models.extract_frame('/path/to/file.1000.more.ext')
@@ -29,10 +29,14 @@ class TestExtractFrame(TestCase):
 		result = models.extract_frame('/path/to/file.1000')
 		self.assertTupleEqual(result, ('/path/to/file.', '1000', ''))
 
+	def test_number_before_frame(self):
+		result = models.extract_frame('/path/to/vid_v1_2018.10.exr')
+		self.assertTupleEqual(result, ('/path/to/vid_v1_2018.', '10', '.exr'))
+
 
 class TestSplitExtension(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 
 	def test_split_single_dot(self):
 		split = models.split_extension('test.ext')
@@ -49,9 +53,9 @@ class TestSplitExtension(TestCase):
 
 class TestFrameRangesToString(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 
-	def test_conver_list(self):
+	def test_convert_list(self):
 		frames = [100, 101, 102, 104, 107, 108, 1010]
 		result = models.frame_ranges_to_string(frames)
 		self.assertEqual(result, '[100-102, 104, 107-108, 1010]')
@@ -117,7 +121,7 @@ class TestStat(TestCase):
 
 class TestFile(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 		self.file_10 = models.File('/some/file.10.dpx')
 		self.file_11 = models.File('/some/file.11.dpx')
 		self.file_011 = models.File('/some/file.011.dpx')
@@ -307,7 +311,7 @@ class TestFile(TestCase):
 
 class TestSequence(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 		missing_files = [
 			'/abs/path/to/file_0100_name.ext',
 			'/abs/path/to/file_0101_name.ext',
@@ -409,7 +413,7 @@ class TestSequence(TestCase):
 
 class TestSequenceFormatting(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 		files = [
 			'/abs/path/to/file_0100_name.ext',
 			'/abs/path/to/file_0101_name.ext',
