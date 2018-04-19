@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 NAME = 'ultrasequence'
 DESCRIPTION = 'An extremely fast file sequencing tool.'
 AUTHOR = 'Cody Cuellar'
 EMAIL = 'cody.cuellar@gmail.com'
 LICENSE = 'MIT'
-COPYRIGHT = '©2017 Cody Cuellar'
+COPYRIGHT = '©2018 Cody Cuellar'
 URL = 'http://github.com/codycuellar/ultrasequence.git'

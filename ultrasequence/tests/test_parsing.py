@@ -1,9 +1,12 @@
 import unittest
 import os
 from unittest import TestCase
-from unittest.mock import patch
+try:
+	from unittest.mock import patch
+except ImportError:
+	from mock import patch
 from ultrasequence import parsing
-from ultrasequence.config import cfg
+from ultrasequence.config import CONFIG
 
 
 def stat_mock(root, files):
@@ -13,7 +16,7 @@ def stat_mock(root, files):
 
 class TestScanDir(TestCase):
 	def setUp(self):
-		cfg.reset_defaults()
+		CONFIG.reset_defaults()
 		self.walk = [
 			(
 				'/root',
@@ -49,7 +52,7 @@ class TestScanDir(TestCase):
 
 	@patch('ultrasequence.parsing.walk')
 	def test_scan_dir_recurse(self, mock_walk):
-		cfg.recurse = True
+		CONFIG.recurse = True
 		mock_walk.return_value = self.walk
 		with patch('ultrasequence.parsing.stat_files') as mock_stat_files:
 			mock_stat_files.side_effect = stat_mock
@@ -67,7 +70,7 @@ class TestScanDir(TestCase):
 
 	@patch('os.path.islink', return_value=False)
 	def test_stat_files_enable_stats(self, mock_islink):
-		cfg.get_stats = True
+		CONFIG.get_stats = True
 		with patch('os.stat', return_value='stats'):
 			result = parsing.stat_files('/root', self.walk[0][2])
 		expected = [(os.path.join('/root', file), 'stats')
