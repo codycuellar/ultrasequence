@@ -52,25 +52,25 @@ options. Then you simply call one of the parser methods of the Parser
 class depending on the type of item you are parsing (directoy, file, or
 python list).
 
-```python
+.. code-block:: python
+
     >>> import ultrasequence as us
     >>> parser = us.Parser()
     >>> parser.parse_directory('~/Documents', recurse=True)
     >>> print(parser)
-    'Parser(sequences=15, single_frames=75, non_sequences=810, excluded=0,
-    collisions=0)'
-```
+    'Parser(sequences=15, single_frames=75, non_sequences=810, excluded=0, collisions=0)'
+
 
 These lists can be accessed as normal lists such as:
 
-```python
+.. code-block:: python
+
     >>> for frame in parser.sequences[0]:
     ...     print(frame)
         
     >>> for sequence in parser.sequences:
     ...     print('Sequence %s is missing %s frames' % (
     ...           sequence.format('%h%P%T'), sequence.missing_frames))
-```
 
 Command-Line Utility
 --------------------
@@ -78,22 +78,22 @@ Command-Line Utility
 To use the command-line utility, run the findseq command after
 installing ultrasequence:
 
-```bash
+.. code-block:: bash
+
     $ findseq /path/to/directory -R --include dpx exr png
-```
 
 All command line options can be overridden by installing the local
-config file to `~/ultrasequence.conf` and updating it with your settings of
+config file to ``~/ultrasequence.conf`` and updating it with your settings of
 choice:
 
-```bash
+.. code-block:: bash
+
     $ findseq -M
-```
 
 This file will always be used as default for both python and
 command-line usage, which can make some command line options impossible
 to enable or disable. If using a local config file, you can temporarily
-disable it by using the `-I` flag. All command line flags are then
+disable it by using the ``-I`` flag. All command line flags are then
 reset to default and can be overridden by using the flags to change the
 default behavior.
 
@@ -104,10 +104,10 @@ Configuration
 -------------
 
 By default, all the options are pre-defined in the
-`ultrasequence.config.UsConfig` class. A CONFIG variable in the
-`ultrasequence.config` is pre-instantiated with the defaults. If
-`CONFIG.make_local_config` is called, a local configuration file will be
-generated with the defaults at `~/.ultrasequence.conf`. You can then modify
+``ultrasequence.config.UsConfig`` class. A CONFIG variable in the
+``ultrasequence.config`` is pre-instantiated with the defaults. If
+``CONFIG.make_local_config`` is called, a local configuration file will be
+generated with the defaults at ``~/.ultrasequence.conf``. You can then modify
 this file as you wish and every time the program is run either in Python or
 from the command-line utility, the values from this config file will be used
 instead. All option can still be overridden with arguments on the
@@ -117,11 +117,11 @@ method parameters.
 The configuration attributes are:
 
 [global]
-++++++++
+~~~~~~~~
 format = %H%r%T
     A string formatter to use for representing the built sequences. For
     more information on how to use the formatter, refer to the docs on
-    `~ultrasequence.models.Sequence.format`
+    ``~ultrasequence.models.Sequence.format``
 recurse = True
     Whether or not to recurse into child directories when scanning folders
     on the local system.
@@ -140,8 +140,8 @@ get_stats = True
     Do a os.stat() on every file found.
 
 [regex]
-+++++++
-frame_extract = `((.*)(\D))?(\d+)(.*)`
+~~~~~~~
+frame_extract = ``((.*)(\D))?(\d+)(.*)``
     The regex pattern to extract the frame numbers. This can be modified for
     special cases such as when the frame number isn't the last digit before the
     extension.
